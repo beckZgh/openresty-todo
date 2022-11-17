@@ -1,3 +1,5 @@
+# 关闭 openresty 进程
+# Get-Process -Name "openresty*" | Stop-Process
 
 function get_root_path() {
     $path = Get-Location
@@ -14,20 +16,13 @@ function get_orpm_path() {
     return ($drive + ".orpm").replace("`\","`/")
 }
 
-function get_orpm_conf() {
-
-    $root = get_root_path
-    if (-not $root) { return }
-
-    Get-Content "$root/.orpmrc" | ConvertFrom-JSON
-
-}
-
 $root = get_root_path
 $orpm = get_orpm_path
-$conf = get_orpm_conf
-$ver  = $conf.openresty_ver
-$arch = $conf.arch
+$ver  = "1.21.4.1"
+$arch = "64"
+
+$openresty      = "openresty-$ver-win$arch"
+$openresty_exe  = "$orpm/openresty/$openresty/openresty.exe"
 
 Write-Host
 Write-Host ---------------------------------------------
@@ -35,15 +30,11 @@ Write-Host "workspace: " -ForegroundColor Yellow -NoNewline
 Write-Host "$root"       -ForegroundColor Blue
 Write-Host "orpm home: " -ForegroundColor Yellow -NoNewline
 Write-Host "$orpm"       -ForegroundColor Blue
-
-# 关闭 openresty 进程
-# Get-Process -Name "openresty*" | Stop-Process
-
-$openresty      = "openresty-$ver-win$arch"
-$openresty_exe  = "$orpm/openresty/$openresty/openresty.exe"
+Write-Host "openresty_exe: " -ForegroundColor Yellow -NoNewline
+Write-Host "$openresty_exe"  -ForegroundColor Blue
 
 # 运行 nginx
-Start-Process $openresty_exe -ArgumentList "-p ./nginx" -NoNewWindow
+# Start-Process $openresty_exe -ArgumentList "-p ./nginx" -NoNewWindow
 
 Write-Host
 Write-Host "start process openresty*" -ForegroundColor Blue
