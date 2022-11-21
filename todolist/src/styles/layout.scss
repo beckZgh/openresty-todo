@@ -1,0 +1,92 @@
+.layout {
+    height: 100%;
+}
+
+.layout-header {
+    display: flex;
+    position: absolute;
+    height: var(--layout-header-height);
+    top: 0;
+    width: 100%;
+
+    &-logo {
+        display: flex;
+        align-items: center;
+        width: var(--layout-aside-width);
+        font-size: 20px;
+        font-weight: bold;
+        color: var(--brand-color);
+        padding-left: 36px;
+    }
+
+    &-inner {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        padding: 0 15px;
+
+        &__left {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+        }
+    }
+
+    &::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 1px;
+        background-color: var(--border-color);
+    }
+}
+
+.layout-aside {
+    position: absolute;
+    top: var(--layout-header-height);
+    bottom: 0;
+    width: var(--layout-aside-width);
+    box-shadow: 0px 0.3px 0.9px rgba(0,0,0,0.1),0px 1.6px 3.6px rgba(0,0,0,0.1);
+    background-color: var(--layout-aside-bg-color);
+
+    .tasks-nav {
+        padding: 15px;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .tasks-nav-item {
+        position: relative;
+        display: flex;
+        align-items: center;
+        height: 50px;
+        padding: 0 20px;
+        box-sizing: border-box;
+        border-radius: 5px;
+        cursor: pointer;
+
+        &:hover {
+            background-color: var(--bg-hover);
+        }
+
+        &.is-active {
+            background-color: var(--brand-color);
+            color: var(--white);
+        }
+
+        &__title {
+            padding: 0 15px;
+        }
+    }
+}
+
+.layout-main {
+    position: absolute;
+    left: var(--layout-aside-width);
+    top: var(--layout-header-height);
+    right: 0;
+    bottom: 0;
+    padding: 15px;
+    box-sizing: border-box;
+}

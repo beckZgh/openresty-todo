@@ -1,0 +1,70 @@
+:root {
+    // 基本色
+    --white: var(--el-color-white);
+    --black: var(--el-color-black);
+
+    // 主色调
+    --primary-color: var(--el-color-primary);
+    --success-color: var(--el-color-success);
+    --warning-color: var(--el-color-warning);
+    --danger-color : var(--el-color-danger);
+    --info-color   : var(--el-color-info);
+
+    // 边框色
+    --border-color: var(--el-border-color);
+    --border-color-disabled: var(--el-border-color);
+
+    // 文本色
+    --text-color            : var(--el-text-color-base);        // 默认文本颜色
+    --text-color-primary    : var(--el-text-color-base);        // 默认文本颜色变重 -> 主要文字
+    --text-color-secondary  : var(--el-text-color-base);        // 默认文本颜色变浅 -> 次要文字
+    --text-color-placeholder: var(--el-text-color-placeholder); // 占位文字颜色
+    --text-color-disabled   : var(--el-text-color-placeholder); // 禁用文字颜色
+
+    // 背景色
+    --bg-hover: #f5f5f5;
+
+    // 品牌色
+    --brand-color: #2564cf;
+
+    // 布局
+    --layout-header-height: 50px;
+    --layout-header-bg-color: var(--brand-color);
+    --layout-aside-width: 290px;
+    --layout-aside-bg-color: var(--white);
+}
+
+// 微软主题变量定义
+// --bg-primary: #fff;
+// --bg-secondary: #faf9f8;
+// --bg-tertiary: #fff;
+// --bg-primary-accent: #faf9f8;
+// --bg-hover: #f5f5f5;
+// --bg-hover-secondary: #fdfdfd;
+// --bg-hover-tertiary: #f5f5f5;
+// --bg-active: #eff6fc;
+// --bg-active-secondary: #f3f2f1;
+// --bg-active-tertiary: #f3f2f1;
+// --bg-separator: #e1dfdd;
+// --bg-border: #e1dfdd;
+// --bg-scrollbar: #edebe9;
+// --bg-shadow: rgba(0,0,0,0.1);
+// --bg-brand: #2564cf;
+// --bg-brand-hover: #215aba;
+// --bg-brand-hover-secondary: #8c93a5;
+// --bg-brand-secondary: #ecf6fd;
+// --bg-brand-disable: #b7d7f6;
+// --font-color-primary: #292827;
+// --font-color-secondary: #605e5c;
+// --font-color-tertiary: #605e5c;
+// --font-color-warning: #a80000;
+// --font-color-brand: #2564cf;
+// --font-color-disable: #a19f9d;
+// --bg-ms-planner: #31752f;
+// --bg-ms-one-note: #7719aa;
+// --bg-ms-excel: #107c41;
+// --bg-ms-word: #185abd;
+// --bg-ms-power-point: #c43e1c;
+// --bg-ms-teams: #6355a8;
+// --bg-warning: #fff4ce;
+// --bg-error: #fed9cc;
