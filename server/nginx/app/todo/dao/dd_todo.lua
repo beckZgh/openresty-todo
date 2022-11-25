@@ -18,7 +18,7 @@ return {
         { "list_index"      , "事项排序"    , "int", len = 1 },
         { "is_finished"     , "是否完成"    , "int", len = 1 },
         { "is_important"    , "是否重要"    , "int", len = 1 },
-        { "is_today"        , "我的一天"    , "int", len = 1 },
+        { "myday"           , "我的一天"    , "date"         },
         { "closing_date"    , "截止日期"    , "date"         },
         { "create_time"     , "创建时间"    , "datetime"     },
         { "update_time"     , "更新时间"    , "datetime"     },

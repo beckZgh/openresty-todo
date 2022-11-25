@@ -2,7 +2,7 @@
 local dd_todo    = _load "$dd_todo"
 
 local utils      = _load "%utils"
-local hashid     = _load "%hashid"
+local hashid     = _load "#hashid"
 
 
 local __ = { ver = "v22.11.21" }

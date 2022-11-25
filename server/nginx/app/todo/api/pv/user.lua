@@ -3,7 +3,7 @@
 local pv_user = _load "$pv_user"
 
 local utils   = _load "%utils"
-local hashid  = _load "%hashid"
+local hashid  = _load "#hashid"
 local _quote  = ngx.quote_sql_str
 
 local __ = { ver = "v22.11.21" }
