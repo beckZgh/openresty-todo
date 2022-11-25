@@ -20,10 +20,10 @@ $api.dd.todo_cate = {
 }
 
 $api.pv = {
-    change_password : ['pv', 'change_password'],
-        check_login : ['pv', 'check_login'],
-              login : ['pv', 'login'],
-             logout : ['pv', 'logout'],
+    check_login : ['pv', 'check_login'],
+          login : ['pv', 'login'],
+         logout : ['pv', 'logout'],
+       register : ['pv', 'register'],
 }
 
 $api.pv.user = {

@@ -30,7 +30,7 @@ declare namespace $api {
         /** 事项排序 */ list_index   : number ;
         /** 是否完成 */ is_finished  : number ;
         /** 是否重要 */ is_important : number ;
-        /** 我的一天 */ is_today     : number ;
+        /** 我的一天 */ myday        : string ;
         /** 截止日期 */ closing_date : string ;
         /** 创建时间 */ create_time  : string ;
         /** 更新时间 */ update_time  : string ;
@@ -65,7 +65,7 @@ declare namespace $api.dd.todo {
 
     /** 添加待办事项列表 */
     function add (req : {
-        /** 用户编码 */ user_id       : string ;
+        /** 用户编码 */ user_id?      : string ;
         /** 分类编码 */ todo_cate_id? : string ;
         /** 事项名称 */ todo_name     : string ;
         /** 事项描述 */ todo_desc?    : string ;
@@ -78,25 +78,25 @@ declare namespace $api.dd.todo {
 
     /** 删除类别 */
     function del (req : {
-        /** 用户编码     */ user_id : string ;
-        /** 待办事项编码 */ todo_id : string ;
+        /** 用户编码     */ user_id? : string ;
+        /** 待办事项编码 */ todo_id  : string ;
     }, opt?: Option): Response <boolean>;
 
     /** 获取待办事项 */
     function get (req : {
-        /** 用户编码 */ user_id : string ;
-        /** 事项编码 */ todo_id : string ;
+        /** 用户编码 */ user_id? : string ;
+        /** 事项编码 */ todo_id  : string ;
     }, opt?: Option): Response <$dd_todo>;
 
     /** 类别列表 */
-    function list (req : {
-        /** 用户编码 */ user_id       : string ;
+    function list (req?: {
+        /** 用户编码 */ user_id?      : string ;
         /** 分类编码 */ todo_cate_id? : string ;
     }, opt?: Option): Response <$dd_todo[]>;
 
     /** 修改待办事项 */
     function set (req : {
-        /** 用户编码     */ user_id       : string ;
+        /** 用户编码     */ user_id?      : string ;
         /** 待办事项编码 */ todo_id       : string ;
         /** 事项名称     */ todo_name     : string ;
         /** 事项描述     */ todo_desc?    : string ;
@@ -113,7 +113,7 @@ declare namespace $api.dd.todo_cate {
 
     /** 添加待办事项分类 */
     function add (req : {
-        /** 用户编码 */ user_id        : string ;
+        /** 用户编码 */ user_id?       : string ;
         /** 分类编码 */ todo_cate_id?  : string ;
         /** 分类名称 */ todo_cate_name : string ;
         /** 分组编码 */ todo_cate_pid? : string ;
@@ -122,24 +122,24 @@ declare namespace $api.dd.todo_cate {
 
     /** 删除待办事项分类 */
     function del (req : {
-        /** 用户编码         */ user_id      : string ;
+        /** 用户编码         */ user_id?     : string ;
         /** 待办事项列表编码 */ todo_cate_id : string ;
     }, opt?: Option): Response <boolean>;
 
     /** 获取待办事项分类 */
     function get (req : {
-        /** 用户编码         */ user_id      : string ;
+        /** 用户编码         */ user_id?     : string ;
         /** 待办事项分类编码 */ todo_cate_id : string ;
     }, opt?: Option): Response <$dd_todo_cate>;
 
     /** 待办事项分类列表 */
-    function list (req : {
-        /** 用户编码 */ user_id : string ;
+    function list (req?: {
+        /** 用户编码 */ user_id? : string ;
     }, opt?: Option): Response <$dd_todo_cate[]>;
 
     /** 修改待办事项分类 */
     function set (req : {
-        /** 用户编码 */ user_id        : string ;
+        /** 用户编码 */ user_id?       : string ;
         /** 分类编码 */ todo_cate_id   : string ;
         /** 分组编码 */ todo_cate_pid? : string ;
         /** 列表名称 */ todo_cate_name : string ;
@@ -150,27 +150,29 @@ declare namespace $api.dd.todo_cate {
 
 declare namespace $api.pv {  // v22.11.21
 
-    /** 修改密码 */
-    function change_password (req : {
-        /** 旧密码 */ OldPassword : string ;
-        /** 新密码 */ NewPassword : string ;
-    }, opt?: Option): Response <boolean>;
-
     /** 检查已登录用户 [local] */
     function check_login (req?: object, opt?: Option): Response <{
-        /** 用户信息 */ user  : UserWithCompany    ;
-        /** 用户权限 */ pv    : string[]           ;
-        /** 报表菜单 */ menus : ReportMenuDefine[] ;
+        /** 用户信息 */ user : pv_user ;
     }>;
 
     /** 手机密码登录 */
     function login (req : {
         /** 手机号码 */ mobile   : string ;
         /** 用户密码 */ password : string ;
-    }, opt?: Option): Response <$pv_user>;
+
+    }, opt?: Option): Response <{
+        /** 用户信息 */ user : $pv_user ;
+    }>;
 
     /** 退出登录 */
     function logout (req?: object, opt?: Option): Response <any>;
+
+    /** 手机密码注册 */
+    function register (req : {
+        /** 用户昵称 */ user_name? : string ;
+        /** 手机号码 */ mobile     : string ;
+        /** 用户密码 */ password   : string ;
+    }, opt?: Option): Response <boolean>;
 
 }
 
@@ -186,21 +188,21 @@ declare namespace $api.pv.user {
     }, opt?: Option): Response <$pv_user>;
 
     /** 删除用户 */
-    function del (req : {
-        /** 用户编码 */ user_id : string ;
+    function del (req?: {
+        /** 用户编码 */ user_id? : string ;
     }, opt?: Option): Response <any>;
 
     /** 获取用户 */
-    function get (req : {
-        /** 用户编码 */ user_id : string ;
+    function get (req?: {
+        /** 用户编码 */ user_id? : string ;
     }, opt?: Option): Response <$pv_user>;
 
     /** 用户列表 */
     function list (req?: object, opt?: Option): Response <$pv_user[]>;
 
     /** 修改用户 */
-    function set (req : {
-        /** 用户编码 */ user_id       : string ;
+    function set (req?: {
+        /** 用户编码 */ user_id?      : string ;
         /** 用户名称 */ user_name?    : string ;
         /** 用户描述 */ user_remark?  : string ;
         /** 手机号码 */ mobile?       : string ;

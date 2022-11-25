@@ -1,5 +1,6 @@
 <script lang="ts">
 import { defineComponent, reactive, computed } from 'vue'
+import { useAppStore } from '@/store'
 import {
     Sunny,
     Star,
@@ -37,9 +38,19 @@ export default defineComponent({
             return m.navs.map(nav => ({ ...nav, qty: 0 }))
         })
 
+        function handleCommand(command: string) {
+            switch(command) {
+                case 'logout': {
+                    useAppStore().logout()
+                    return
+                }
+            }
+        }
+
         return {
             m,
             navs$,
+            handleCommand
         }
     }
 })
@@ -60,13 +71,13 @@ export default defineComponent({
                     <ElIcon :size="18"><Setting /></ElIcon>
                 </ElButton>
 
-                <ElDropdown>
+                <ElDropdown @command="handleCommand">
                     <ElButton text>
                         <ElIcon :size="18"><User /></ElIcon>
                         <span>朱国华</span>
                     </ElButton>
                     <template #dropdown>
-                        <ElDropdownItem>
+                        <ElDropdownItem command="logout">
                             <ElIcon><SwitchButton /></ElIcon>
                             退出登录
                         </ElDropdownItem>

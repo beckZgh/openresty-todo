@@ -2,25 +2,32 @@
 import { reactive } from 'vue'
 
 const m = reactive({
-    result: ''
+    todos: [] as $api.$dd_todo[],
+    wxdev_login_qrcode: ''
 })
 
-async function load() {
-    const res = await $api.dd.todo.list({ user_id: '' }, { showLoading: true })
+load(false)
+async function load(refresh: boolean) {
+    const res = await $api.dd.todo.list({}, { showLoading: true, delay: refresh ? 0 : 300 })
     if ( !res.ok ) return
 
-    m.result = JSON.stringify(res)
+    m.todos = res.data
 }
+
+
 </script>
 
 <template>
     <div>
         <div>
-            <ElButton @click="load">发起请求</ElButton>
+            <ElButton @click="load(true)">刷新</ElButton>
         </div>
-
         <div>
-            {{ m.result }}
+            <ul>
+                <template v-for="item in m.todos">
+                    <li style="line-height: 2">{{ item.todo_name }}</li>
+                </template>
+            </ul>
         </div>
     </div>
 </template>

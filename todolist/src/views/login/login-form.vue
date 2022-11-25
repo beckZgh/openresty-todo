@@ -1,9 +1,10 @@
 <script lang="ts">
 import { defineComponent, ref, reactive } from 'vue'
-import { Iphone, Key, Box } from '@element-plus/icons-vue'
+import { Iphone, Key, Box    } from '@element-plus/icons-vue'
+import { createAesEncryption } from '@/utils/cipher'
 
 // 加密对象
-// const Aes = createAesEncryption({ key: 'abcdefgabcdefg12' })
+const Aes = createAesEncryption({ key: 'abcdefgabcdefg12' })
 
 export default defineComponent({
     name : 'LoginForm',
@@ -11,25 +12,22 @@ export default defineComponent({
         submitting: { type: Boolean, default: false }, // 是否提交中
     },
     components: { Box },
-    emits: ['submit'],
+    emits: ['login', 'register'],
     setup(_, { emit }) {
         const m = reactive({
             curr_mode: 'login' as 'login' | 'register',
             form: {
-                company_id: '',
                 mobile    : '',
                 password  : '',
             },
             rules: {
-                company_id: [{ required: true, message: '商户号不能为空', tigger: 'change' }],
                 mobile    : [{ required: true, message: '手机号不能为空', tigger: 'change' }],
                 password  : [{ required: true, message: '密码不能为空'  , tigger: 'change' }],
             },
         })
 
         try {
-            m.form.company_id = localStorage.getItem('company_id'  ) || ''
-            m.form.mobile     = localStorage.getItem('login_mobile') || ''
+            m.form.mobile = localStorage.getItem('login_mobile') || ''
         } catch (error) {}
 
         // 处理登录或注册
@@ -42,6 +40,17 @@ export default defineComponent({
             const valid = await $form.validate()
             if ( !valid ) return
 
+            if (m.curr_mode === 'login') {
+                emit('login', {
+                    mobile  : Aes.encryptByAES(m.form.mobile),
+                    password: Aes.encryptByAES(m.form.password)
+                })
+            } else {
+                emit('register', {
+                    mobile  : m.form.mobile,
+                    password: m.form.password
+                })
+            }
         }
 
         return {

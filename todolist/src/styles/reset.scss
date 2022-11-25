@@ -34,3 +34,24 @@ input:-webkit-autofill,
 input:-webkit-autofill:focus {
     transition: background-color 600000s 0s, color 600000s 0s;
 }
+
+.sd-request-loading {
+    .el-loading-spinner {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        left: 50%; top: 50%;
+        margin-left: -50px;
+        margin-top: -50px!important;
+        width: 100px;
+        height: 100px;
+        border-radius: 8px;
+        background-color: rgba(0, 0, 0, 0.5);
+
+        .circular,
+        .el-loading-text {
+            color: #eee;
+        }
+    }
+}

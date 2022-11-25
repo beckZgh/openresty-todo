@@ -1,9 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAppStore } from '@/store'
 
 import Layout from '@/layout/index.vue'
 
 // 创建路由
-const router = createRouter({
+export const router = createRouter({
     history       : createWebHistory(),
     routes        : [
         {
@@ -49,14 +50,28 @@ const router = createRouter({
     scrollBehavior: () => ({ left: 0, top: 0 }),
 })
 
-export default router
+// 白名单
+const WHITE_NAMES = ['Login']
 
-// // 获取路由基础路径
-// function getUriBase() {
-//     // 生产环境：默认读取后端配置
-//     if (process.env.NODE_ENV === 'production' && window.G.uri_base) {
-//         return window.G.uri_base
-//     } else {
-//         return import.meta.env.VITE_URI_BASE as string
-//     }
-// }
+// 重置路由
+export function resetRouter() {
+    router.getRoutes().forEach((route) => {
+        const name = route.name
+        if (name && !WHITE_NAMES.includes(name as string)) {
+            router.hasRoute(name) && router.removeRoute(name)
+        }
+    })
+}
+
+router.beforeEach((to) => {
+    // 白名单跳过权限检查
+    if (to.name && WHITE_NAMES.includes(to.name as string)) return true
+
+    // 未登录
+    const appStore = useAppStore()
+    if ( !appStore.is_login$ ) return { name: 'Login', query: { redirect: to.fullPath } }
+
+    return true
+})
+
+export default router

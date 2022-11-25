@@ -1,9 +1,25 @@
 <script lang="ts" setup>
+import { useRouter } from 'vue-router'
+import { useAppStore } from '@/store'
+
 // 背景图片
 import LoginBgImg    from './assets/login-bg.svg'
 import LoginBoxBgImg from './assets/login-box-bg.svg'
 
 import LoginForm from './login-form.vue'
+
+const appStore     = useAppStore()
+const $router      = useRouter()
+const redirect_url = ($router.currentRoute.value.query.redirect || '') as string
+
+function handleLogin(form: { mobile: string; password: string }) {
+    appStore.login(form, redirect_url)
+}
+
+async function handleRegister(form: { mobile: string; password: string }) {
+    const res = await appStore.register(form)
+    if ( !res.ok ) return
+}
 </script>
 
 <template>
@@ -22,7 +38,7 @@ import LoginForm from './login-form.vue'
                 </div>
             </div>
             <div class="login-box__right">
-                <LoginForm />
+                <LoginForm @login="handleLogin" @register="handleRegister" />
             </div>
         </div>
     </div>

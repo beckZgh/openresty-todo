@@ -16,5 +16,11 @@ declare global {
         $app   : App
         $store : Pinia
         $router: Router
+
+        G      : {
+            server_date: string
+            server_time: numbeer
+            user       : $api.$pv_user
+        }
     }
 }

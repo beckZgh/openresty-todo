@@ -3,8 +3,8 @@ import createApiRequest from './http'
 import api_scehma       from './api'
 
 const api_config = {
-    url   : '/todo/tasks.api.ljson', // 请求 API 路径
-    schema: api_scehma            , // API 定义
+    url   : '/todo/api.ljson', // 请求 API 路径
+    schema: api_scehma       , // API 定义
 }
 
 const $http = createApiRequest()
