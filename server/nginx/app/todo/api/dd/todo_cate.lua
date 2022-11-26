@@ -34,12 +34,10 @@ __.list__ = {
     res = "$dd_todo_cate[]"
 }
 __.list = function(t)
-
-    local  res = dd_todo_cate.list { user_id = t.user_id }
-    if not res then return nil, "服务器忙，请稍候再试" end
-
-    return res
-
+    return dd_todo_cate.list {
+        user_id   = t.user_id,
+       _order_by  = "list_index, todo_cate_id"
+    }
 end
 
 __.add__ = {

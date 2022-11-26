@@ -1,9 +1,9 @@
 local pv_user        = _load "$pv_user"
+local hashid         = _load "#hashid"
+local aes            = _load "#aes"
 local api            = _load "api"
 
 local session        = require "resty.session"
-local Aes            = require "resty.aes"
-local KEY            = "abcdefgabcdefg12"
 
 local __ = { _VERSION = "v22.11.21" }
 
@@ -17,27 +17,6 @@ local function _getSession()
 
 end
 
--- 解密文本
-local function _decrypt(text)
-
-    if type(text) ~= "string" or text == "" then
-        return nil, "密文不能为空"
-    end
-
-    local hash   = { iv = "aaaabbbbccccdddd" }
-    local cipher = Aes.cipher(128, "ecb")
-
-    local  aes_128_ecb, err = Aes:new(KEY, nil, cipher, hash)
-    if not aes_128_ecb then return nil, err end
-
-    local  str_base64 = ngx.decode_base64(text)
-    local  str, err = aes_128_ecb:decrypt(str_base64)
-    if not str then return nil, err end
-
-    return str
-
-end
-
 __.login__ = {
     "手机密码登录",
     pv  = false,  -- 无需检查是否已登录
@@ -48,13 +27,15 @@ __.login__ = {
     },
     types = "$pv_user",
     res = {
-        { "user", "用户信息" , "$pv_user" },
+        { "user"      , "用户信息" , "$pv_user"      },
+        { "tasks"     , "待办任务" , "$dd_todo"      },
+        { "task_cates", "任务列表" , "$dd_todo_cate" },
     }
 }
 __.login = function(t)
 
-    local mobile   = _decrypt(t.mobile)
-    local password = _decrypt(t.password)
+    local mobile   = aes.decrypt(t.mobile)
+    local password = aes.decrypt(t.password)
     if not mobile or not password then return nil, "账号密码错误" end
 
     -- 取得用户
@@ -62,7 +43,7 @@ __.login = function(t)
     if err then return nil, "服务器忙，请稍后再试"  end
 
     -- 检查密码
-    if not user or user.password ~= password then return nil, "账号密码错误" end
+    if not user or aes.decrypt(user.password) ~= password then return nil, "账号密码错误" end
 
     -- 保存当前用户信息
     ngx.ctx.user = user
@@ -76,8 +57,10 @@ __.login = function(t)
     sss.data.uid = user.user_id
     sss:save()
 
+    local dd = api.dd.load(user)
+
     -- 返回用户信息及权限列表
-    return { user = user }
+    return { user = user, tasks = dd.tasks, task_cates = dd.task_cates }
 
 end
 
@@ -101,9 +84,10 @@ __.register = function(t)
 
     -- 注册新用户
     local new_user, err = api.pv.user.add({
+        user_id   = hashid.generate(),
         user_name = t.user_name or "To do 用户",
         mobile    = t.mobile,
-        password  = t.password
+        password  = aes.encrypt(t.password)
     })
     if not new_user then return nil, err end
 

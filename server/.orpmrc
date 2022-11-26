@@ -23,7 +23,8 @@
                  "golgote/lua-resty-info":  "master",
                  "fffonion/lua-resty-acme":  "0.9.0",
                  "fffonion/lua-resty-openssl":  "0.8.15",
-                 "bungle/lua-resty-session":  "v3.10"
+                 "bungle/lua-resty-session":  "v3.10",
+                 "kwanhur/lua-resty-gd":  "master"
              },
     "devs":  {
 

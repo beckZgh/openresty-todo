@@ -34,7 +34,7 @@ Write-Host "openresty_exe: " -ForegroundColor Yellow -NoNewline
 Write-Host "$openresty_exe"  -ForegroundColor Blue
 
 # 运行 nginx
-# Start-Process $openresty_exe -ArgumentList "-p ./nginx" -NoNewWindow
+Start-Process $openresty_exe -ArgumentList "-p $root/nginx" -NoNewWindow
 
 Write-Host
 Write-Host "start process openresty*" -ForegroundColor Blue

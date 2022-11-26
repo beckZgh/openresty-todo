@@ -8,23 +8,6 @@ local _quote  = ngx.quote_sql_str
 
 local __ = { ver = "v22.11.21" }
 
--- 重名检查
-local function check_name(t)
--- @t : $pv_user
-
-    if not t.user_name then return nil, "用户名称不能为空" end
-
-    local res, err  = pv_user.get {
-        user_name   = t.user_name,
-        t.user_id and ("user_id <> " .. _quote(t.user_id)) or nil
-    }
-    if err then return nil, "服务器忙，请稍候再试" end
-    if res then return nil, "用户名称不能重复"     end
-
-    return true
-
-end
-
 -- 检查手机是否重复
 local function check_mobile(t)
 -- @t : $pv_user
@@ -99,10 +82,6 @@ __.add = function(req)
     local t = req
 
     t.user_name = utils.strip_name(t.user_name)
-
-    -- 检查用户不能重名
-    local  ok, err = check_name(t)
-    if not ok then return nil, err end
 
     -- 检查手机是否重复
     local  ok, err = check_mobile(t)
