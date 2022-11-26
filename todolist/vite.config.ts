@@ -10,7 +10,7 @@ export default defineConfig({
         strictPort: false, // 端口占用则尝试下一个端口
         proxy: {
             '/todo/': {
-                target      : 'http://localhost',     // 代理目标
+                target      : 'http://localhost/',     // 代理目标
                 changeOrigin: true,             // 将主机头的来源更改为目标 URL
                 ws          : true,             // 代理 websocket
             },

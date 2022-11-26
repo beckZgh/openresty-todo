@@ -13,6 +13,12 @@ export const useAppStore = defineStore('app', () => {
         user       : G.user ?? null as $api.$pv_user | null,
     })
 
+    // 今天
+    const today$ = computed(() => state.server_date || $utils.dt.format(new Date()))
+
+    // 明天
+    const tomorrow$ = computed(() => $utils.dt.nextDate(today$.value))
+
     // 是否已登录
     const is_login$ = computed(() => !!state.user?.user_id )
 
@@ -59,6 +65,8 @@ export const useAppStore = defineStore('app', () => {
     return {
         ...toRefs(state),
         is_login$,
+        today$,
+        tomorrow$,
         register,
         login,
         logout,

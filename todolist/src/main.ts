@@ -17,7 +17,6 @@ const app = createApp({
     render: () => h(RouterView)
 })
 
-
 app.use(Store)
 app.use(Router)
 app.use(ElementPslus, { locale: DayjsZhCn })

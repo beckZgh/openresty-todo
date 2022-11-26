@@ -1,14 +1,21 @@
 
 const $api: any = {}
 
-$api.dd = {}
+$api.dd = {
+        load : ['dd', 'load'],
+}
 
 $api.dd.todo = {
-         add : ['dd.todo', 'add'],
-         del : ['dd.todo', 'del'],
-         get : ['dd.todo', 'get'],
-        list : ['dd.todo', 'list'],
-         set : ['dd.todo', 'set'],
+                 add : ['dd.todo', 'add'],
+                 del : ['dd.todo', 'del'],
+                 get : ['dd.todo', 'get'],
+                list : ['dd.todo', 'list'],
+                 set : ['dd.todo', 'set'],
+    set_closing_date : ['dd.todo', 'set_closing_date'],
+     set_is_finished : ['dd.todo', 'set_is_finished'],
+    set_is_important : ['dd.todo', 'set_is_important'],
+           set_myday : ['dd.todo', 'set_myday'],
+            set_name : ['dd.todo', 'set_name'],
 }
 
 $api.dd.todo_cate = {

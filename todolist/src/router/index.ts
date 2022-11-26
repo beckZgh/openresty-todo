@@ -18,25 +18,30 @@ export const router = createRouter({
             redirect: '/tasks/myday',
             component: Layout,
             children: [
+                // {
+                //     path: 'myday',
+                //     name: 'TasksMyday',
+                //     component: () => import('@/views/tasks/myday.vue')
+                // },
+                // {
+                //     path: 'important',
+                //     name: 'TasksImportant',
+                //     component: () => import('@/views/tasks/important.vue')
+                // },
+                // {
+                //     path: 'planned',
+                //     name: 'TasksPlanned',
+                //     component: () => import('@/views/tasks/planned.vue')
+                // },
+                // {
+                //     path: 'inbox',
+                //     name: 'TasksInbox',
+                //     component: () => import('@/views/tasks/inbox.vue')
+                // },
                 {
-                    path: 'myday',
-                    name: 'TasksMyday',
-                    component: () => import('@/views/tasks/myday.vue')
-                },
-                {
-                    path: 'important',
-                    name: 'TasksImportant',
-                    component: () => import('@/views/tasks/important.vue')
-                },
-                {
-                    path: 'planned',
-                    name: 'TasksPlanned',
-                    component: () => import('@/views/tasks/planned.vue')
-                },
-                {
-                    path: 'inbox',
-                    name: 'TasksInbox',
-                    component: () => import('@/views/tasks/inbox.vue')
+                    path: ':id',
+                    name: 'TasksDynamicId',
+                    component: () => import('@/views/tasks/list.vue')
                 }
             ]
         },

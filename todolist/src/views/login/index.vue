@@ -1,99 +1,146 @@
 <script lang="ts" setup>
-import { useRouter } from 'vue-router'
+import { useRouter   } from 'vue-router'
 import { useAppStore } from '@/store'
+import { ref         } from 'vue'
 
-// 背景图片
-import LoginBgImg    from './assets/login-bg.svg'
-import LoginBoxBgImg from './assets/login-box-bg.svg'
-
-import LoginForm from './login-form.vue'
+import AppLogo      from '@/components/AppLogo.vue'
+import LoginForm    from './components/LoginForm.vue'
+import RegisterForm from './components/RegisterForm.vue'
 
 const appStore     = useAppStore()
 const $router      = useRouter()
 const redirect_url = ($router.currentRoute.value.query.redirect || '') as string
 
-function handleLogin(form: { mobile: string; password: string }) {
-    appStore.login(form, redirect_url)
+// 当前表单
+const form_ref   = ref()
+const curr_form  = ref<'login' | 'register'>('login')
+const submitting = ref(false)
+
+// 处理登录
+async  function handleLogin(form: { mobile: string; password: string }) {
+    submitting.value = true
+    await appStore.login(form, redirect_url)
+    submitting.value = false
 }
 
+// 处理注册
 async function handleRegister(form: { mobile: string; password: string }) {
+    submitting.value = true
     const res = await appStore.register(form)
+    submitting.value = false
     if ( !res.ok ) return
+
+    form_ref.value && form_ref.value.clearForm()
+    curr_form.value = 'login'
 }
 </script>
 
 <template>
-    <div class="login-wrap">
-        <div class="login-wrap__bg" :style="{ backgroundImage: `url(${ LoginBgImg })` }" />
-        <div class="login-box">
-            <div class="login-box__left">
-                <img :src="LoginBoxBgImg" width="350">
-                <div style="width: 350px; ">
-                    <div class="login-box__left-title">
-                        欢迎使用 To Do
-                    </div>
-                    <div class="login-box__left-sub-title">
-                        为您的日常任务制定一份含有优先级的待办清单
-                    </div>
+    <div class="container">
+        <div class="container-left">
+            <img src="@/assets/login-bg.svg" />
+        </div>
+        <div class="container-right">
+            <div class="box-wrap">
+                <div class="box-wrap__logo">
+                    <AppLogo></AppLogo>
+                    <span>OpenResty Todo</span>
                 </div>
-            </div>
-            <div class="login-box__right">
-                <LoginForm @login="handleLogin" @register="handleRegister" />
+                <div class="box-wrap__welcome">
+                    欢迎使用 OpenResty Todo 管理您的待办任务
+                </div>
+                <div class="nav-scroll-wrap">
+                    <div class="nav-wrapper">
+                        <div :class="{ 'is-active': curr_form === 'login'    }" @click="curr_form = 'login'">登录</div>
+                        <div :class="{ 'is-active': curr_form === 'register' }" @click="curr_form = 'register'">注册</div>
+                    </div>
+                    <div class="nav-bar" :style="{ left: curr_form === 'login' ? '122px' : '278px' }" />
+                </div>
+                <component
+                    ref="form_ref"
+                    :is="curr_form === 'login' ? LoginForm : RegisterForm"
+                    :submitting="submitting"
+                    @login="handleLogin"
+                    @register="handleRegister"
+                />
             </div>
         </div>
     </div>
 </template>
 
 <style lang="scss" scoped>
-.login-wrap {
-    position: relative;
+.container {
     display: flex;
-    align-items: center;
-    justify-content: center;
     height: 100%;
 
-    &__bg {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        margin-left: -48%;
-        background-position: 100%;
-        background-repeat: no-repeat;
-        background-size: auto 100%;
+    &-left,
+    &-right {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        flex: 1;
     }
 
-    .login-box {
-        position: absolute;
-        z-index: 10;
-        width: 1200px;
+    &-left  {
+        background-color: var(--primary-color);
+
+        > img {
+            width: 70%;
+            display: inline-block;
+        }
+    }
+}
+
+.box-wrap {
+    width: 436px;
+
+    &__logo {
         display: flex;
+        justify-content: center;
+        align-items: center;
 
-        &__left,
-        &__right {
-            flex: 1;
+        span {
+            font-size: 30px;
+            font-weight: bold;
+            color: var(--primary-color);
         }
+    }
 
-        &__left img {
-            margin-bottom: 20px;
-        }
+    &__welcome {
+        margin-top: 20px;
+        margin-bottom: 20px;
+        text-align: center;
+        font-size: 16px;
+        color: var(--text-color-placeholder);
+    }
 
-        &__right {
+    .nav-scroll-wrap {
+        position: relative;
+        margin-bottom: 20px;
+
+        .nav-wrapper {
             display: flex;
-            justify-content: flex-end;
-            align-items: center;
+            justify-content: space-evenly;
+
+            > div {
+                cursor: pointer;
+                padding: 10px 0;
+                font-size: 16px;
+
+                &.is-active {
+                    color: var(--primary-color);
+                }
+            }
         }
 
-        &__left-title {
-            font-size: 32px;
-            color: var(--white);
-        }
-
-        &__left-sub-title {
-            margin-top: 15px;
-            font-size: 16px;
-            color: var(--white);
+        .nav-bar {
+            position: absolute;
+            width: 36px;
+            height: 2px;
+            background-color: var(--primary-color);
+            bottom: 0;
+            transition: left ease .3s;
         }
     }
 }

@@ -25,10 +25,10 @@
     --bg-hover: #f5f5f5;
 
     // 品牌色
-    --brand-color: #2564cf;
+    --brand-color: var(--el-color-primary);
 
     // 布局
-    --layout-header-height: 50px;
+    --layout-header-height: 60px;
     --layout-header-bg-color: var(--brand-color);
     --layout-aside-width: 290px;
     --layout-aside-bg-color: var(--white);

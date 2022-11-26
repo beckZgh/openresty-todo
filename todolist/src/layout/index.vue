@@ -1,6 +1,8 @@
 <script lang="ts">
-import { defineComponent, reactive, computed } from 'vue'
-import { useAppStore } from '@/store'
+import { defineComponent, ref      } from 'vue'
+import { useAppStore, useTodoStore } from '@/store'
+
+import AppLogo from '@/components/AppLogo.vue'
 import {
     Sunny,
     Star,
@@ -9,7 +11,11 @@ import {
     Setting,
     Box,
     User,
-    SwitchButton
+    SwitchButton,
+    Search,
+    Plus,
+    FolderAdd,
+    Sort,
 } from '@element-plus/icons-vue'
 
 export default defineComponent({
@@ -21,22 +27,22 @@ export default defineComponent({
         Setting,
         Box,
         User,
-        SwitchButton
+        Plus,
+        FolderAdd,
+        Sort,
+        SwitchButton,
+        AppLogo,
     },
 
     setup() {
-        const m = reactive({
-            navs: [
-                { icon: 'Sunny'   , title: '我的一天', path: '/tasks/myday'     },
-                { icon: 'Star'    , title: '重要'    , path: '/tasks/important' },
-                { icon: 'Calendar', title: '计划内'  , path: '/tasks/planned'   },
-                { icon: 'House'   , title: '任务'    , path: '/tasks/inbox'     },
-            ]
-        })
+        const todoStore = useTodoStore()
 
-        const navs$ = computed(() => {
-            return m.navs.map(nav => ({ ...nav, qty: 0 }))
-        })
+        const navs = ref([
+            { icon: 'Sunny'   , title: '我的一天', path: '/tasks/myday'         , id: 'myday'        },
+            { icon: 'Star'    , title: '重要'    , path: '/tasks/important'     , id: 'important'    },
+            { icon: 'Calendar', title: '计划内'  , path: '/tasks/closing_date'  , id: 'closing_date' },
+            { icon: 'House'   , title: '任务'    , path: '/tasks/inbox'         , id: 'inbox'        },
+        ])
 
         function handleCommand(command: string) {
             switch(command) {
@@ -48,9 +54,10 @@ export default defineComponent({
         }
 
         return {
-            m,
-            navs$,
-            handleCommand
+            todoStore,
+            navs,
+            handleCommand,
+            Search
         }
     }
 })
@@ -60,10 +67,8 @@ export default defineComponent({
     <div class="layout">
         <div class="layout-header">
             <div class="layout-header-logo">
-                <ElIcon style="margin-right: 6px;">
-                    <Box />
-                </ElIcon>
-                To Do
+                <AppLogo :size="20"></AppLogo>
+                <span>OpenResty Todo</span>
             </div>
             <div class="layout-header-inner">
                 <div class="layout-header-inner__left"></div>
@@ -84,10 +89,20 @@ export default defineComponent({
                     </template>
                 </ElDropdown>
             </div>
+
+            <div class="layout-header-search">
+                <ElInput
+                    v-model="todoStore.search_val"
+                    :prefix-icon="Search"
+                    placeholder="快速搜索..."
+                    @focus="todoStore.setSearchFocus(true)"
+                    @blur="todoStore.setSearchFocus(false)"
+                />
+            </div>
         </div>
         <div class="layout-aside">
-            <div class="tasks-nav">
-                <template v-for="item in navs$" :key="item.path" >
+            <div class="layout-aside-header">
+                <template v-for="item in navs" :key="item.path" >
                     <div
                         class="tasks-nav-item"
                         :class="{ 'is-active': $route.path === item.path }"
@@ -99,15 +114,52 @@ export default defineComponent({
                         <div class="tasks-nav-item__title">
                             {{ item.title }}
                         </div>
-                        <div v-if="item.qty" class="tasks-nav-item__qty">
-                            {{ item.qty }}
+                        <div v-if="todoStore.len$[item.id]" class="tasks-nav-item__qty">
+                            {{ todoStore.len$[item.id] }}
                         </div>
                     </div>
                 </template>
             </div>
+            <div class="layout-aside-body">
+                <ElScrollbar height="100%">
+                    <div class="tasks-cate">
+                        <template v-for="item in todoStore.task_cates" :key="item.todo_cate_id" >
+                            <div
+                                class="tasks-nav-item"
+                                :class="{ 'is-active': $route.params.id === item.todo_cate_id }"
+                                @click="$router.push(`/tasks/${ item.todo_cate_id }`)"
+                            >
+                                <ElIcon :size="16">
+                                    <Sort />
+                                </ElIcon>
+                                <div class="tasks-nav-item__title">
+                                    {{ item.todo_cate_name }}
+                                </div>
+                                <div v-if="todoStore.len$[item.todo_cate_id]" class="tasks-nav-item__qty">
+                                    {{ todoStore.len$[item.todo_cate_id] }}
+                                </div>
+
+                                <!-- <ElButton @click="todoStore.setTaskCate(item)">修改</ElButton>
+                                <ElButton @click="todoStore.delTaskCate(item)">删除</ElButton> -->
+                            </div>
+                        </template>
+                    </div>
+                </ElScrollbar>
+            </div>
+            <div class="layout-aside-footer">
+                <div class="layout-aside-footer-left">
+                    <ElButton text @click="todoStore.addTaskCate">
+                        <ElIcon ><Plus /></ElIcon>
+                        <span style="position: relative; top: 2px;">新建列表</span>
+                    </ElButton>
+                </div>
+                <!-- <ElButton text>
+                    <ElIcon :size="18"><FolderAdd /></ElIcon>
+                </ElButton> -->
+            </div>
         </div>
         <div class="layout-main">
-            <RouterView></RouterView>
+            <RouterView :key="$route.fullPath"></RouterView>
         </div>
     </div>
 </template>

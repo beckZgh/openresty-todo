@@ -59,7 +59,18 @@ declare namespace $api {
 
 }
 
-declare namespace $api.dd {}
+declare namespace $api.dd {  // v22.11.26
+
+    /** 加载基础数据 */
+    function load (req?: {
+        /** 用户编码 */ user_id? : string ;
+
+    }, opt?: Option): Response <{
+        /** 用户信息 */ tasks      : $dd_todo      ;
+        /** 用户信息 */ task_cates : $dd_todo_cate ;
+    }>;
+
+}
 
 declare namespace $api.dd.todo {
 
@@ -98,13 +109,48 @@ declare namespace $api.dd.todo {
     function set (req : {
         /** 用户编码     */ user_id?      : string ;
         /** 待办事项编码 */ todo_id       : string ;
-        /** 事项名称     */ todo_name     : string ;
+        /** 事项名称     */ todo_name?    : string ;
         /** 事项描述     */ todo_desc?    : string ;
         /** 事项排序     */ list_index?   : number ;
         /** 是否完成     */ is_finished?  : number ;
         /** 是否重要     */ is_important? : number ;
         /** 我的一天     */ is_today?     : number ;
         /** 截止日期     */ closing_date? : string ;
+    }, opt?: Option): Response <$dd_todo>;
+
+    /** 设置截止日期 */
+    function set_closing_date (req : {
+        /** 用户编码     */ user_id?     : string ;
+        /** 待办事项编码 */ todo_id      : string ;
+        /** 截止日期     */ closing_date : string ;
+    }, opt?: Option): Response <$dd_todo>;
+
+    /** 设置是否重要 */
+    function set_is_finished (req : {
+        /** 用户编码     */ user_id?    : string ;
+        /** 待办事项编码 */ todo_id     : string ;
+        /** 是否完成     */ is_finished : number ;
+    }, opt?: Option): Response <$dd_todo>;
+
+    /** 设置是否重要 */
+    function set_is_important (req : {
+        /** 用户编码     */ user_id?     : string ;
+        /** 待办事项编码 */ todo_id      : string ;
+        /** 是否重要     */ is_important : number ;
+    }, opt?: Option): Response <$dd_todo>;
+
+    /** 设置为我的一天 */
+    function set_myday (req : {
+        /** 用户编码     */ user_id? : string ;
+        /** 待办事项编码 */ todo_id  : string ;
+        /** 我的一天     */ myday    : string ;
+    }, opt?: Option): Response <$dd_todo>;
+
+    /** 修改任务名称 */
+    function set_name (req : {
+        /** 用户编码     */ user_id?  : string ;
+        /** 待办事项编码 */ todo_id   : string ;
+        /** 事项名称     */ todo_name : string ;
     }, opt?: Option): Response <$dd_todo>;
 
 }
@@ -161,7 +207,9 @@ declare namespace $api.pv {  // v22.11.21
         /** 用户密码 */ password : string ;
 
     }, opt?: Option): Response <{
-        /** 用户信息 */ user : $pv_user ;
+        /** 用户信息 */ user       : $pv_user      ;
+        /** 待办任务 */ tasks      : $dd_todo      ;
+        /** 任务列表 */ task_cates : $dd_todo_cate ;
     }>;
 
     /** 退出登录 */
