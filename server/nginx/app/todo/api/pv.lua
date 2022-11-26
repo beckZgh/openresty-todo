@@ -27,9 +27,9 @@ __.login__ = {
     },
     types = "$pv_user",
     res = {
-        { "user"      , "用户信息" , "$pv_user"      },
-        { "tasks"     , "待办任务" , "$dd_todo"      },
-        { "task_cates", "任务列表" , "$dd_todo_cate" },
+        { "user"      , "用户信息" , "$pv_user"         },
+        { "tasks"     , "待办任务" , "$dd_todo[]"       },
+        { "task_cates", "任务列表" , "$dd_todo_catep[]" },
     }
 }
 __.login = function(t)
