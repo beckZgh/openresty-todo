@@ -6,14 +6,11 @@
 
 练习后端开发的产物
 
-## 项目截图
+## 项目技术栈
 
-![登录-浅色](./docs/login-light.png)
-![登录-深色](./docs/login-dark.png)
-![设置-浅色](./docs/setting-light.png)
-![设置-深色](./docs/setting-dark.png)
-![任务-浅色](./docs/task-light.png)
-![任务-深色](./docs/task-dark.png)
+- 采用 [element-plus](https://element-plus.gitee.io/zh-CN/) UI库
+- 前端使用 [Vue3](https://cn.vuejs.org/) + [Typescript](https://www.typescriptlang.org/) + [Vite](https://cn.vitejs.dev/) 最新技术栈构建
+- 后端使用我司开源的 [OpenResty-appx](https://github.com/killsen/openresty-appx) 开发
 
 ## 项目特色
 
@@ -23,9 +20,15 @@
 - 支持任务列表进行分组
 - 支持 “我的一天”、“重要”、“计划内”、“已完成”、“全部”、“任务” 六个智能列表
 - 支持不同列表设置不同浅、深色主题
-- 采用 [element-plus](https://element-plus.gitee.io/zh-CN/) UI库
-- 前端使用 [Vue3](https://cn.vuejs.org/) + [Typescript](https://www.typescriptlang.org/) + [Vite](https://cn.vitejs.dev/) 最新技术栈构建
-- 后端使用我司开源的 [OpenResty-appx](https://github.com/killsen/openresty-appx) 开发
+
+## 项目截图
+
+![登录-浅色](./docs/login-light.png)
+![登录-深色](./docs/login-dark.png)
+![设置-浅色](./docs/setting-light.png)
+![设置-深色](./docs/setting-dark.png)
+![任务-浅色](./docs/task-light.png)
+![任务-深色](./docs/task-dark.png)
 
 ## 正在开发中
 
