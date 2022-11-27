@@ -1,13 +1,14 @@
 <script lang="ts" setup>
 import { useRouter   } from 'vue-router'
-import { useAppStore } from '@/store'
 import { ref         } from 'vue'
+import { useAppStore, useTodoStore } from '@/store'
 
 import AppLogo      from '@/components/AppLogo.vue'
 import LoginForm    from './components/LoginForm.vue'
 import RegisterForm from './components/RegisterForm.vue'
 
 const appStore     = useAppStore()
+const todoStore    = useTodoStore()
 const $router      = useRouter()
 const redirect_url = ($router.currentRoute.value.query.redirect || '') as string
 
@@ -19,8 +20,12 @@ const submitting = ref(false)
 // 处理登录
 async  function handleLogin(form: { mobile: string; password: string }) {
     submitting.value = true
-    await appStore.login(form, redirect_url)
+    const res = await appStore.login(form, redirect_url)
     submitting.value = false
+    if ( !res.ok ) return
+
+    todoStore.tasks      = res.data.tasks
+    todoStore.task_cates = res.data.task_cates
 }
 
 // 处理注册
@@ -44,10 +49,10 @@ async function handleRegister(form: { mobile: string; password: string }) {
             <div class="box-wrap">
                 <div class="box-wrap__logo">
                     <AppLogo></AppLogo>
-                    <span>OpenResty Todo</span>
+                    <span>OpenResty ToDo</span>
                 </div>
                 <div class="box-wrap__welcome">
-                    欢迎使用 OpenResty Todo 管理您的待办任务
+                    欢迎使用 OpenResty ToDo 规划您的待办任务
                 </div>
                 <div class="nav-scroll-wrap">
                     <div class="nav-wrapper">
@@ -83,13 +88,17 @@ async function handleRegister(form: { mobile: string; password: string }) {
     }
 
     &-left  {
-        background-color: var(--primary-color);
+        background-color: var(--el-color-primary);
 
         > img {
             width: 70%;
             display: inline-block;
         }
     }
+}
+
+html.dark .container-left {
+    background-color: transparent !important;
 }
 
 .box-wrap {
@@ -103,7 +112,7 @@ async function handleRegister(form: { mobile: string; password: string }) {
         span {
             font-size: 30px;
             font-weight: bold;
-            color: var(--primary-color);
+            color: var(--el-color-primary);
         }
     }
 
@@ -129,7 +138,7 @@ async function handleRegister(form: { mobile: string; password: string }) {
                 font-size: 16px;
 
                 &.is-active {
-                    color: var(--primary-color);
+                    color: var(--el-color-primary);
                 }
             }
         }
@@ -138,7 +147,7 @@ async function handleRegister(form: { mobile: string; password: string }) {
             position: absolute;
             width: 36px;
             height: 2px;
-            background-color: var(--primary-color);
+            background-color: var(--el-color-primary);
             bottom: 0;
             transition: left ease .3s;
         }

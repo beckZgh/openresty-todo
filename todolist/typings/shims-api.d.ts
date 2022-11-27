@@ -66,8 +66,8 @@ declare namespace $api.dd {  // v22.11.26
         /** 用户编码 */ user_id? : string ;
 
     }, opt?: Option): Response <{
-        /** 用户信息 */ tasks      : $dd_todo      ;
-        /** 用户信息 */ task_cates : $dd_todo_cate ;
+        /** 用户信息 */ tasks      : $dd_todo[]     ;
+        /** 用户信息 */ task_cates : $dd_todo_cate[];
     }>;
 
 }
@@ -207,9 +207,9 @@ declare namespace $api.pv {  // v22.11.21
         /** 用户密码 */ password : string ;
 
     }, opt?: Option): Response <{
-        /** 用户信息 */ user       : $pv_user      ;
-        /** 待办任务 */ tasks      : $dd_todo      ;
-        /** 任务列表 */ task_cates : $dd_todo_cate ;
+        /** 用户信息 */ user       : $pv_user         ;
+        /** 待办任务 */ tasks      : $dd_todo[]       ;
+        /** 任务列表 */ task_cates : $dd_todo_catep[] ;
     }>;
 
     /** 退出登录 */

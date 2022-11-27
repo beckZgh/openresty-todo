@@ -21,7 +21,7 @@ export default defineComponent({
 .app-logo {
     position: relative;
     display: inline-block;
-    background-color: var(--primary-color);
+    background-color: var(--el-color-primary);
     border-radius: 10px 5px 20px 5px;
     padding: 4px 6px;
     margin-right: 10px;

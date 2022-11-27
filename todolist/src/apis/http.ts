@@ -40,7 +40,7 @@ export default function () {
         // 请求后拦截
         responseInterceptor(response) {
             // 更新服务器时间
-            useAppStore().setServerTime(response.data as any)
+            useAppStore().updateDateWithTime(response.data as any)
 
             return response
         },

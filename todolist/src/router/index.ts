@@ -42,6 +42,11 @@ export const router = createRouter({
                     path: ':id',
                     name: 'TasksDynamicId',
                     component: () => import('@/views/tasks/list.vue')
+                },
+                {
+                    path: 'setting',
+                    name: 'TasksSetting',
+                    component: () => import('@/views/tasks/setting.vue')
                 }
             ]
         },

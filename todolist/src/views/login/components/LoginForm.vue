@@ -133,7 +133,7 @@ export default defineComponent({
 <style lang="scss" scoped>
 .other-login-icon {
     display: inline-block;
-    color: var(--primary-color);
+    color: var(--el-color-primary);
     margin-left: 15px;
     cursor: pointer;
 }

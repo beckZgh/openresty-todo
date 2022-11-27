@@ -5,15 +5,13 @@ import { useAppStore } from './app'
 import { router      } from '@/router'
 
 export const useTodoStore = defineStore('todo', () => {
-    const G = window.G || {}
-
+    const G        = window.G || {}
     const appStore = useAppStore()
 
     // 数据
     const state = reactive({
         serach_focus: false,                                      // 搜索框获得焦点
         search_val  : '',                                         // 搜索值
-        loaded      : false,                                      // 是否已成功加载
         tasks       : G.tasks      || [] as $api.$dd_todo[]     , // 待办任务列表
         task_cates  : G.task_cates || [] as $api.$dd_todo_cate[], // 任务分类
     })
@@ -57,19 +55,13 @@ export const useTodoStore = defineStore('todo', () => {
     })
 
     // 加载数据
-    async function load(refresh = false) {
-        if (state.loaded) return
-
-        const res = await $api.dd.todo.list({}, { showLoading: true, delay: refresh ? 0 : 300 })
-        if (res) {
-            state.tasks  = res.data
-            state.loaded = true
-        }
-    }
-
-    // 刷新数据
     async function refresh() {
-        return await load(true)
+        const res = await $api.dd.load({}, { showLoading: true, delay: false })
+        if (res) {
+            state.tasks      = res.data.tasks
+            state.task_cates = res.data.task_cates
+        }
+        return res
     }
 
     // 设置搜索是否获得焦点
@@ -86,8 +78,9 @@ export const useTodoStore = defineStore('todo', () => {
         })
         if ( !input_value ) return
 
-        const params = router.currentRoute.value.params
-        const res = await $api.dd.todo.add({ todo_name: input_value as string, todo_cate_id: (params.id || '') as string }, { showLoading: true })
+        const id      = (router.currentRoute.value.params.id || '') as string
+        const cate_id = ['myday', 'important', 'closing_date', 'inbox'].includes(id) ? '' : id
+        const res = await $api.dd.todo.add({ todo_name: input_value as string, todo_cate_id: cate_id }, { showLoading: true })
         if ( !res.ok ) return
 
         state.tasks.push(res.data)
@@ -206,6 +199,14 @@ export const useTodoStore = defineStore('todo', () => {
         $utils.successMsg('删除成功')
     }
 
+    // 退出清空数据
+    function clear() {
+        state.serach_focus = false
+        state.search_val   = ''
+        state.tasks        = []
+        state.task_cates   = []
+    }
+
     return {
         ...toRefs(state),
         myday_list$,
@@ -215,7 +216,7 @@ export const useTodoStore = defineStore('todo', () => {
         cate_list$,
         len$,
 
-        load,
+        clear,
         refresh,
         setSearchFocus,
 
