@@ -5,7 +5,7 @@ local api            = _load "api"
 
 local session        = require "resty.session"
 
-local __ = { _VERSION = "v22.11.21" }
+local __ = { _VERSION = "v22.11.28" }
 
 -- 取得 session
 local function _getSession()
@@ -18,28 +18,28 @@ local function _getSession()
 end
 
 __.login__ = {
-    "手机密码登录",
+    "邮箱登录",
     pv  = false,  -- 无需检查是否已登录
     log = true,
     req = {
-        { "mobile"      , "手机号码"    },
+        { "email"       , "用户邮箱"    },
         { "password"    , "用户密码"    },
     },
     types = "$pv_user",
     res = {
         { "user"      , "用户信息" , "$pv_user"         },
-        { "tasks"     , "待办任务" , "$dd_todo[]"       },
-        { "task_cates", "任务列表" , "$dd_todo_catep[]" },
+        { "tasks"     , "待办任务" , "$dd_task[]"       },
+        { "task_cates", "任务列表" , "$dd_task_catep[]" },
     }
 }
 __.login = function(t)
 
-    local mobile   = aes.decrypt(t.mobile)
+    local email    = aes.decrypt(t.email)
     local password = aes.decrypt(t.password)
-    if not mobile or not password then return nil, "账号密码错误" end
+    if not email or not password then return nil, "账号密码错误" end
 
     -- 取得用户
-    local  user, err = pv_user.get { mobile = mobile }
+    local  user, err = pv_user.get { email = email }
     if err then return nil, "服务器忙，请稍后再试"  end
 
     -- 检查密码
@@ -57,20 +57,20 @@ __.login = function(t)
     sss.data.uid = user.user_id
     sss:save()
 
-    local dd = api.dd.load(user)
+    local dd = api.dd.load(user) or {}
 
     -- 返回用户信息及权限列表
-    return { user = user, tasks = dd.tasks, task_cates = dd.task_cates }
+    return { user = user, tasks = dd.tasks or {}, task_cates = dd.task_cates or {} }
 
 end
 
 __.register__ = {
-    "手机密码注册",
+    "邮箱密码注册",
     pv  = false,  -- 无需检查是否已登录
     log = true,
     req = {
         { "user_name?"  , "用户昵称"    },
-        { "mobile"      , "手机号码"    },
+        { "email"       , "用户邮箱"    },
         { "password"    , "用户密码"    },
     },
     res = "boolean"
@@ -78,15 +78,15 @@ __.register__ = {
 __.register = function(t)
 
     -- 检查用户是否已注册
-    local  user, err = pv_user.get { mobile = t.mobile }
+    local  user, err = pv_user.get { email = t.email }
     if err  then return nil, "服务器忙，请稍后再试" end
-    if user then return nil, "用户已注册"           end
+    if user then return nil, "邮箱已注册"           end
 
     -- 注册新用户
     local new_user, err = api.pv.user.add({
         user_id   = hashid.generate(),
-        user_name = t.user_name or "To do 用户",
-        mobile    = t.mobile,
+        user_name = t.user_name or "默认用户",
+        email     = t.email,
         password  = aes.encrypt(t.password)
     })
     if not new_user then return nil, err end

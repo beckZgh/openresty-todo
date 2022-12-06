@@ -6,6 +6,7 @@ import type { Pinia  } from 'pinia'
 
 import Utils from '../src/utils'
 
+
 declare global {
     /** 工具方法 */
     const $utils = Utils
@@ -22,7 +23,7 @@ declare global {
             server_time: numbeer
             user       : $api.$pv_user
             tasks      : $api.$dd_todo[]
-            task_cates : $api.$dd_todo_cate[]
+            task_cates : $api.$dd_task_cate[]
         }
     }
 }

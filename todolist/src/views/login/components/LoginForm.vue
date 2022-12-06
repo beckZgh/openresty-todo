@@ -15,17 +15,17 @@ export default defineComponent({
     setup(_, { emit }) {
         const m = reactive({
             form: {
-                mobile    : '',
-                password  : '',
+                email    : '',
+                password : '',
             },
             rules: {
-                mobile    : [{ required: true, message: '手机号不能为空', tigger: 'change' }],
-                password  : [{ required: true, message: '密码不能为空'  , tigger: 'change' }],
+                email   : [{ required: true, message: '邮箱不能为空', tigger: 'change' }],
+                password: [{ required: true, message: '密码不能为空'  , tigger: 'change' }],
             },
         })
 
         try {
-            m.form.mobile = localStorage.getItem('login_mobile') || ''
+            m.form.email = localStorage.getItem('login_email') || ''
         } catch (error) {}
 
         // 处理登录或注册
@@ -39,7 +39,7 @@ export default defineComponent({
             if ( !valid ) return
 
             emit('login', {
-                mobile  : Aes.encryptByAES(m.form.mobile),
+                email   : Aes.encryptByAES(m.form.email),
                 password: Aes.encryptByAES(m.form.password)
             })
         }
@@ -52,7 +52,7 @@ export default defineComponent({
         // 清空表单
         function clearForm() {
             m.form = {
-                mobile    : '',
+                email    : '',
                 password  : '',
             }
         }
@@ -79,20 +79,18 @@ export default defineComponent({
         autocomplete="off"
         @keyup.enter="handleSubmit"
     >
-        <ElFormItem :rules="m.rules.mobile" prop="mobile" class="input-item">
+        <ElFormItem :rules="m.rules.email" prop="email" class="input-item">
             <ElInput
-                v-model="m.form.mobile"
-                :prefix-icon="Iphone"
+                v-model="m.form.email"
                 clearable
                 size="large"
                 autocomplete="new-password"
-                placeholder="请输入手机号"
+                placeholder="请输入邮箱"
             />
         </ElFormItem>
         <ElFormItem :rules="m.rules.password" prop="password" class="input-item">
             <ElInput
                 v-model="m.form.password"
-                :prefix-icon="Key"
                 type="password"
                 clearable
                 size="large"
@@ -133,7 +131,7 @@ export default defineComponent({
 <style lang="scss" scoped>
 .other-login-icon {
     display: inline-block;
-    color: var(--el-color-primary);
+    color: var(--primary-color);
     margin-left: 15px;
     cursor: pointer;
 }

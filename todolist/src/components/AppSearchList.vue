@@ -1,20 +1,18 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
-import { useTodoStore } from '@/store'
+import { useTaskStore } from '@/store'
 
 export default defineComponent({
     name: 'AppSearchList',
     setup() {
-        const todoStore = useTodoStore()
-        return {
-            todoStore
-        }
+        const taskStore = useTaskStore()
+        return { taskStore }
     }
 })
 </script>
 
 <template>
-    <div v-if="todoStore.serach_focus">
+    <div v-if="taskStore.serach_focus">
         搜索中
     </div>
     <slot v-else />

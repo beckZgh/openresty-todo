@@ -13,6 +13,7 @@ return {
             { "user_id"      , "用户编码"    , pk = true     },
             { "user_name"    , "用户名称"    ,               },
             { "user_remark"  , "用户备注"    ,               },
+            { "email"        , "用户邮箱"                    },
             { "mobile"       , "用户手机"    ,               },
             { "password"     , "用户密码"    ,               },
             { "head_img_url" , "用户头像"    ,  len = 200    },

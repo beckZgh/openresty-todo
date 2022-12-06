@@ -1,14 +1,13 @@
 <script lang="ts" setup>
 import { useRouter   } from 'vue-router'
 import { ref         } from 'vue'
-import { useAppStore, useTodoStore } from '@/store'
+import { useAppStore } from '@/store'
 
 import AppLogo      from '@/components/AppLogo.vue'
 import LoginForm    from './components/LoginForm.vue'
 import RegisterForm from './components/RegisterForm.vue'
 
 const appStore     = useAppStore()
-const todoStore    = useTodoStore()
 const $router      = useRouter()
 const redirect_url = ($router.currentRoute.value.query.redirect || '') as string
 
@@ -18,18 +17,14 @@ const curr_form  = ref<'login' | 'register'>('login')
 const submitting = ref(false)
 
 // 处理登录
-async  function handleLogin(form: { mobile: string; password: string }) {
+async  function handleLogin(form: { email: string; password: string }) {
     submitting.value = true
     const res = await appStore.login(form, redirect_url)
     submitting.value = false
-    if ( !res.ok ) return
-
-    todoStore.tasks      = res.data.tasks
-    todoStore.task_cates = res.data.task_cates
 }
 
 // 处理注册
-async function handleRegister(form: { mobile: string; password: string }) {
+async function handleRegister(form: { email: string; password: string }) {
     submitting.value = true
     const res = await appStore.register(form)
     submitting.value = false

@@ -1,25 +1,24 @@
 
 
 local pv_user = _load "$pv_user"
-
 local utils   = _load "%utils"
 local hashid  = _load "#hashid"
 local _quote  = ngx.quote_sql_str
 
-local __ = { ver = "v22.11.21" }
+local __ = { ver = "v22.12.07" }
 
--- 检查手机是否重复
-local function check_mobile(t)
+-- 检查邮箱是否重复
+local function check_email(t)
 -- @t : $pv_user
 
-    if not t.mobile then return nil, "手机号码不能为空" end
+    if not t.email then return nil, "邮箱不能为空" end
 
     local res, err  = pv_user.get {
-        mobile      = t.mobile,
+        email      = t.email,
         t.user_id and ("user_id <> " .. _quote(t.user_id)) or nil
     }
     if err then return nil, "服务器忙，请稍候再试"  end
-    if res then return nil, "手机号码不能重复"      end
+    if res then return nil, "邮箱不能重复"          end
 
     return true
 
@@ -68,11 +67,10 @@ __.add__ = {
     "添加用户",
     log = true,
     req = {
-      --{ "user_id"         , "用户编码" },
-        { "user_name"       , "用户名称" },
-        { "user_remark?"    , "用户描述" },
-        { "mobile"          , "手机号码" },
+        { "user_name?"      , "用户名称" },
+        { "email"           , "用户邮箱" },
         { "password"        , "用户密码" },
+        { "user_remark?"    , "用户描述" },
         { "head_img_url?"   , "用户头像" },
     },
     res = "$pv_user"
@@ -83,8 +81,8 @@ __.add = function(req)
 
     t.user_name = utils.strip_name(t.user_name)
 
-    -- 检查手机是否重复
-    local  ok, err = check_mobile(t)
+    -- 检查邮箱是否重复
+    local  ok, err = check_email(t)
     if not ok then return nil, err end
 
     t.user_id     = hashid.generate()
@@ -104,9 +102,9 @@ __.set__ = {
     req = {
         { "user_id"         , "用户编码" },
         { "user_name?"      , "用户名称" },
-        { "user_remark?"    , "用户描述" },
         { "mobile?"         , "手机号码" },
         { "password?"       , "用户密码" },
+        { "user_remark?"    , "用户描述" },
         { "head_img_url?"   , "用户头像" },
     },
     res = "$pv_user"
@@ -123,18 +121,6 @@ __.set = function(req)
     -- 生成待更新的数据
     local  d, wh = utils.gen_update(t, tOld, "user_id")
     if not d then return tOld end
-
-    -- 检查用户不能重名
-    if d.user_name then
-        local  ok, err = check_name(t)
-        if not ok then return nil, err end
-    end
-
-    -- 检查手机是否重复
-    if d.mobile then
-        local  ok, err = check_mobile(t)
-        if not ok then return nil, err end
-    end
 
     local  ok, err = pv_user.set(wh)
     if not ok then return nil, err end

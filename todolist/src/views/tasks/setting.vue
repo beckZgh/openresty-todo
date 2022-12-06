@@ -13,7 +13,7 @@ const appStore = useAppStore()
                     </ElAvatar>
                     <div>
                         <div class="user-info__name">{{ appStore.user?.user_name || '' }}</div>
-                        <div class="user-info__mobile">{{ appStore.user?.mobile    || '' }}</div>
+                        <div class="user-info__mobile">{{ appStore.user?.email   || '' }}</div>
                     </div>
                 </div>
                 <ElButton>退出登录</ElButton>

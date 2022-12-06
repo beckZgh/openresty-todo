@@ -79,20 +79,17 @@ function createMessageBox<T>(MessageBoxMethod: ElMessageBoxShortcutMethod) {
     return (
         message: string,
         title?: string,
-        options?: ElMessageBoxOptions['type'] | ElMessageBoxOptions,
+        options?: ElMessageBoxOptions,
     ): Promise<T> => {
         return new Promise((resolve) => {
             try {
                 title   = title   || '提示'
                 message = message || ''
 
-                let type: ElMessageBoxOptions['type'] = 'warning'
+                let type: ElMessageBoxOptions['type'] = ''
                 let opt : ElMessageBoxOptions         = {}
-                if (isString(options)) {
-                    type = options
-                    opt  = {}
-                } else if (isObject(opt)) {
-                    type = opt?.type || 'warning'
+                if (isObject(options)) {
+                    type = options?.type ?? 'warning'
                     opt  = options   || {}
                 }
 

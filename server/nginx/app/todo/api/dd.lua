@@ -14,8 +14,8 @@ __.load__ = {
     }
 }
 __.load = function(t)
-    local tasks      = api.dd.todo.list(t)
-    local task_cates = api.dd.todo_cate.list(t)
+    local tasks      = api.dd.task.list(t)
+    local task_cates = api.dd.task_cate.list(t)
 
     return { tasks = tasks or {}, task_cates = task_cates or {} }
 end

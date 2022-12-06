@@ -1,10 +1,10 @@
 
-import { defineStore } from 'pinia'
+import { defineStore                } from 'pinia'
 import { reactive, toRefs, computed } from 'vue'
-import { useAppStore } from './app'
-import { router      } from '@/router'
+import { useAppStore                } from './app'
+import { router                     } from '@/router'
 
-export const useTodoStore = defineStore('todo', () => {
+export const useTaskStore = defineStore('task', () => {
     const G        = window.G || {}
     const appStore = useAppStore()
 
@@ -12,8 +12,8 @@ export const useTodoStore = defineStore('todo', () => {
     const state = reactive({
         serach_focus: false,                                      // 搜索框获得焦点
         search_val  : '',                                         // 搜索值
-        tasks       : G.tasks      || [] as $api.$dd_todo[]     , // 待办任务列表
-        task_cates  : G.task_cates || [] as $api.$dd_todo_cate[], // 任务分类
+        tasks       : G.tasks      || [] as $api.$dd_task[]     , // 待办任务列表
+        task_cates  : G.task_cates || [] as $api.$dd_task_cate[], // 任务分类
     })
 
     // 我的一天
@@ -156,20 +156,21 @@ export const useTodoStore = defineStore('todo', () => {
     // 添加任务分类
     async function addTaskCate() {
         const input_value = await $utils.showPrompt('请输入分类标题', '新建列表', {
+            type: '',
             inputValidator(value) { // value 默认为 null
                 return (value && value.trim()) ? true : '列表不能为空'
             }
         })
         if ( !input_value ) return
 
-        const res = await $api.dd.todo_cate.add({ todo_cate_name: input_value as string }, { showLoading: true })
+        const res = await $api.dd.task_cate.add({ todo_cate_name: input_value as string }, { showLoading: true })
         if ( !res.ok ) return
 
         state.task_cates.push(res.data)
     }
 
     // 修改任务分类
-    async function setTaskCate(item: $api.$dd_todo_cate) {
+    async function setTaskCate(item: $api.$dd_task_cate) {
         const input_value = await $utils.showPrompt('请输入分类标题', '修改列表', {
             inputValue: item.todo_cate_name,
             inputValidator(value) { // value 默认为 null
@@ -178,7 +179,7 @@ export const useTodoStore = defineStore('todo', () => {
         })
         if ( !input_value ) return
 
-        const res = await $api.dd.todo_cate.set({ todo_cate_id: item.todo_cate_id, todo_cate_name: input_value as string }, { showLoading: true })
+        const res = await $api.dd.task_cate.set({ todo_cate_id: item.todo_cate_id, todo_cate_name: input_value as string }, { showLoading: true })
         if ( !res.ok ) return
 
         const idx = state.task_cates.findIndex(_ => _.todo_cate_id === item.todo_cate_id)
@@ -186,11 +187,11 @@ export const useTodoStore = defineStore('todo', () => {
     }
 
     // 删除任务分类
-    async function delTaskCate(item: $api.$dd_todo_cate){
+    async function delTaskCate(item: $api.$dd_task_cate){
         const confirm = await $utils.showConfirm('是否删除当前任务列表')
         if ( !confirm ) return
 
-        const res = await $api.dd.todo_cate.del({ todo_cate_id: item.todo_cate_id })
+        const res = await $api.dd.task_cate.del({ todo_cate_id: item.todo_cate_id })
         if ( !res.ok ) return
 
         const idx = state.task_cates.findIndex(_ => _.todo_cate_id === item.todo_cate_id)

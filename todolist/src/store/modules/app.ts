@@ -1,8 +1,9 @@
 
 import { reactive, toRefs, computed, watch } from 'vue'
-import { defineStore  } from 'pinia'
-import { router       } from '@/router'
-import { useTodoStore } from './todo'
+import { defineStore                       } from 'pinia'
+import { router                            } from '@/router'
+import { useTaskCateStore                  } from './task-cate'
+import { useTaskStore                      } from './task'
 
 export const useAppStore = defineStore('app', () => {
     const G    = window.G || {}
@@ -18,7 +19,7 @@ export const useAppStore = defineStore('app', () => {
             light_theme: { type: 'image', value: '@/assets/img0.jpg' }
         },
         {
-            id: 'closing_date', title: '计划内', path: '/tasks/closing_date', icon: 'Calendar',
+            id: 'closing_date', title: '计划内', path: '/tasks/closing-date', icon: 'Calendar',
             dark_theme : { type: 'image', value: '@/assets/img0.jpg' },
             light_theme: { type: 'image', value: '@/assets/img0.jpg' }
         },
@@ -35,7 +36,7 @@ export const useAppStore = defineStore('app', () => {
         server_date: G.server_date ?? '',
         user       : G.user ?? null as $api.$pv_user | null,
         navs       ,
-        curr_nav   : navs[0] as IntelligenceNavItem | $api.$dd_todo_cate,
+        curr_nav   : navs[0] as IntelligenceNavItem | $api.$dd_task_cate,
         setting    : {
             theme: 'light' as 'dark' | 'light',
             enable_important    : true ,
@@ -70,7 +71,7 @@ export const useAppStore = defineStore('app', () => {
     }, { deep: true })
 
     // 注册
-    async function register(req: { mobile: string; password: string }) {
+    async function register(req: { email: string; password: string }) {
         const res = await $api.pv.register(req)
         if (res.ok) {
             $utils.successNotice('注册成功')
@@ -79,10 +80,14 @@ export const useAppStore = defineStore('app', () => {
     }
 
     // 登录
-    async function login(req: { mobile: string; password: string }, redirect_url?: string) {
+    async function login(req: { email: string; password: string }, redirect_url?: string) {
         const res = await $api.pv.login(req)
         if (res.ok) {
-            state.user = res.data.user
+
+            useTaskCateStore().task_cates = res.data.task_cates
+            useTaskStore().tasks          = res.data.tasks
+            state.user                    = res.data.user
+
             router.replace(redirect_url ? redirect_url : '/')
             $utils.successNotice('登录成功')
         }
@@ -98,7 +103,8 @@ export const useAppStore = defineStore('app', () => {
         if ( !res.ok ) return
 
         // 清空待办任务
-        useTodoStore().clear()
+        useTaskCateStore().clear()
+        useTaskStore().clear()
 
         router.replace({
             path : '/login',

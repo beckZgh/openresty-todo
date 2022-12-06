@@ -21,9 +21,12 @@
     }
 
     &-header {
+        padding: 0 15px 15px;
         border-bottom: 1px solid var(--el-border-color);
 
         .logo-wrap {
+            padding: 24px 0;
+
             span {
                 font-size: 20px;
                 font-weight: bold;
@@ -77,6 +80,21 @@
             padding: 0 15px;
             flex: 1;
             overflow: hidden;
+        }
+    }
+}
+
+.layout-aside {
+    .el-menu {
+        border-right: 0;
+
+        > .el-menu-item {
+            padding-left: 10px !important;
+        }
+
+        .el-menu-item .el-icon {
+            width: auto;
+            margin-right: 0;
         }
     }
 }

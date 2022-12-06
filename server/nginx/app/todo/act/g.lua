@@ -10,7 +10,6 @@ __.name  = "To Do 全局数据"
 
 __.actx = function()
 
-
     -- 检查已登录用户
     local res  = api.pv.check_login()
     local user = res and res.user

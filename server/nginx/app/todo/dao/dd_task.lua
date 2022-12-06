@@ -2,8 +2,8 @@
 return {
 --------------------------------------------------------------
 
-    table_name  = "dd_todo"
-,   table_desc  = "待办事项表"
+    table_name  = "dd_task"
+,   table_desc  = "待办任务表"
 ,   table_index = {
 
 }
@@ -11,11 +11,11 @@ return {
 ,   field_list = {
 
         { "user_id"         , "用户编码"    , pk = true      },
-        { "todo_cate_id"    , "分类编码"    , pk = true      },
-        { "todo_id"         , "事项编码"    , pk = true      },
-        { "todo_name"       , "事项名称"                     },
-        { "todo_desc"       , "事项描述"                     },
-        { "list_index"      , "事项排序"    , "int", len = 1 },
+        { "task_cate_id"    , "分类编码"    , pk = true      },
+        { "task_id"         , "任务编码"    , pk = true      },
+        { "task_name"       , "任务名称"                     },
+        { "task_desc"       , "任务描述"                     },
+        { "list_index"      , "任务排序"    , "int", len = 1 },
         { "is_finished"     , "是否完成"    , "int", len = 1 },
         { "is_important"    , "是否重要"    , "int", len = 1 },
         { "myday"           , "我的一天"    , "date"         },

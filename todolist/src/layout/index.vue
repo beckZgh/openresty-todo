@@ -1,39 +1,45 @@
 <script lang="ts">
-import { defineComponent           } from 'vue'
+import { defineComponent, computed } from 'vue'
 import { useRouter                 } from 'vue-router'
-import { useAppStore, useTodoStore } from '@/store'
+import {
+    useAppStore,
+    useTaskStore,
+    useTaskCateStore,
+} from '@/store'
 
 import AppLogo from '@/components/AppLogo.vue'
 
 export default defineComponent({
     components: { AppLogo },
     setup() {
-        const todoStore = useTodoStore()
-        const appStore  = useAppStore()
-        const $router   = useRouter()
+        const appStore      = useAppStore()      // 应用数据
+        const taskCateStore = useTaskCateStore() // 任务列表/分组数据
+        const todoStore     = useTaskStore()     // 任务数据
+        const $router       = useRouter()        // 路由实例
+
+        // 当前导航编码
+        const curr_nav_id$ = computed(() => {
+            return ($router.currentRoute.value.params.id || '') as string
+        })
 
         // 处理用户指令
         function handleCommand(command: string) {
             switch(command) {
-                case 'logout': {
-                    appStore.logout()
-                    return
-                }
-                case 'setting': {
-                    $router.push('setting')
-                    return
-                }
+                case 'logout' : return appStore.logout()
+                case 'setting': return $router.push('setting')
             }
         }
 
         // 切换导航
-        function handleSwitchNav(item: typeof appStore.navs[0] | $api.$dd_todo_cate) {
+        function handleSwitchNav(item: IntelligenceNavItem | $api.$dd_task_cate) {
             appStore.curr_nav = item
-            $router.push(`/tasks/${ 'todo_cate_id' in item ? item.todo_cate_id : item.id }`)
+            $router.push(`/tasks/${ 'task_cate_id' in item ? item.task_cate_id : item.id }`)
         }
 
         return {
+            curr_nav_id$,
             appStore,
+            taskCateStore,
             todoStore,
             handleCommand,
             handleSwitchNav,
@@ -79,7 +85,7 @@ export default defineComponent({
                     v-model="todoStore.search_val"
                     prefix-icon="Search"
                     placeholder="快速搜索..."
-                    style="margin: 15px 0;"
+                    style="margin-bottom: 15px;"
                     @focus="todoStore.setSearchFocus(true)"
                     @blur="todoStore.setSearchFocus(false)"
                 />
@@ -104,33 +110,71 @@ export default defineComponent({
                 </template>
             </div>
 
+            <v-contextmenu ref="task_cate_contextmenu" >
+                <div style="width: 150px">
+                    <v-contextmenu-item @click="taskCateStore.handleTaskCateContextmenu('rename')" >重命名列表</v-contextmenu-item>
+                    <v-contextmenu-item @click="taskCateStore.handleTaskCateContextmenu('move')" >将列表移动到</v-contextmenu-item>
+                    <v-contextmenu-item @click="taskCateStore.handleTaskCateContextmenu('copy')" >复制列表</v-contextmenu-item>
+                    <v-contextmenu-item @click="taskCateStore.handleTaskCateContextmenu('remove')" >删除列表</v-contextmenu-item>
+                </div>
+            </v-contextmenu>
+
+            <v-contextmenu ref="task_cate_group_contextmenu" >
+                <div style="width: 150px">
+                    <v-contextmenu-item>重命名分组</v-contextmenu-item>
+                    <v-contextmenu-item>取消分组列表</v-contextmenu-item>
+                </div>
+            </v-contextmenu>
+
             <!-- 自定义列表 -->
             <div class="layout-aside-body">
                 <ElScrollbar height="100%">
                     <div class="tasks-cate">
-                        <template v-for="item in todoStore.task_cates" :key="item.todo_cate_id" >
-                            <ElPopover :width="200" trigger="contextmenu" :hide-after="0">
-                                <template #reference>
-                                    <div
-                                        class="tasks-nav-item"
-                                        :class="{ 'is-active': $route.params.id === item.todo_cate_id }"
-                                        @click="handleSwitchNav(item)"
-                                    >
-                                        <ElIcon :size="16"><Sort /></ElIcon>
-                                        <div class="tasks-nav-item__title">
-                                            {{ item.todo_cate_name }}
+                        <ElMenu :default-active="curr_nav_id$" >
+
+                            <template v-for="item in taskCateStore.task_cate_navs$" :key="item.task_cate_id" >
+                                <ElSubMenu v-if="item.children && item.children.length" :index="item.task_cate_id">
+                                    <template #title>
+                                        <div  v-contextmenu:task_cate_group_contextmenu>
+                                            {{ item.task_cate_name }}
                                         </div>
-                                        <div v-if="todoStore.len$[item.todo_cate_id]" class="tasks-nav-item__qty">
-                                            {{ todoStore.len$[item.todo_cate_id] }}
-                                        </div>
+                                    </template>
+                                    <template v-for="child in item.children" :key="child.task_cate_id">
+                                        <ElMenuItem
+                                            class="tasks-nav-item"
+                                            :index="child.task_cate_id"
+                                            v-contextmenu:task_cate_contextmenu
+                                            @click="handleSwitchNav(item)"
+                                            @contextmenu.prevent="taskCateStore.setCurrContextmenuItem(item)"
+                                        >
+                                            <ElIcon :size="16"><Sort /></ElIcon>
+                                            <div class="tasks-nav-item__title">
+                                                {{ child.task_cate_name }}
+                                            </div>
+                                            <div v-if="todoStore.len$[child.task_cate_id]" class="tasks-nav-item__qty">
+                                                {{ todoStore.len$[child.task_cate_id] }}
+                                            </div>
+                                        </ElMenuItem>
+                                    </template>
+                                </ElSubMenu>
+                                <ElMenuItem
+                                    v-else
+                                    class="tasks-nav-item"
+                                    :index="item.task_cate_id"
+                                    v-contextmenu:task_cate_contextmenu
+                                    @contextmenu.prevent="taskCateStore.setCurrContextmenuItem(item)"
+                                    @click="handleSwitchNav(item)"
+                                >
+                                    <ElIcon :size="16"><Sort /></ElIcon>
+                                    <div class="tasks-nav-item__title">
+                                        {{ item.task_cate_name }}
                                     </div>
-                                </template>
-                                <div>
-                                    <div @click="todoStore.setTaskCate(item)">重命名</div>
-                                    <div @click="todoStore.delTaskCate(item)">删除</div>
-                                </div>
-                            </ElPopover>
-                        </template>
+                                    <div v-if="todoStore.len$[item.task_cate_id]" class="tasks-nav-item__qty">
+                                        {{ todoStore.len$[item.task_cate_id] }}
+                                    </div>
+                                </ElMenuItem>
+                            </template>
+                        </ElMenu>
                     </div>
                 </ElScrollbar>
             </div>
@@ -138,14 +182,14 @@ export default defineComponent({
             <!-- 新建列表、目录 -->
             <div class="layout-aside-footer">
                 <div class="layout-aside-footer-left">
-                    <ElButton text @click="todoStore.addTaskCate">
+                    <ElButton text @click="taskCateStore.addTaskCate">
                         <ElIcon><Plus /></ElIcon>
                         <span style="position: relative; top: 2px;">新建列表</span>
                     </ElButton>
                 </div>
-                <!-- <ElButton text>
+                <ElButton text @click="taskCateStore.addTaskCateGroup">
                     <ElIcon :size="18"><FolderAdd /></ElIcon>
-                </ElButton> -->
+                </ElButton>
             </div>
         </div>
 

@@ -16,6 +16,7 @@ specifiers:
   pinia: ^2.0.24
   sass: ^1.56.1
   typescript: ^4.9.3
+  v-contextmenu: ^3.0.0
   vite: ^3.2.3
   vite-plugin-dynamic-publicpath: ^1.1.2
   vite-plugin-html: ^3.2.0
@@ -33,6 +34,7 @@ dependencies:
   normalize.css: 8.0.1
   nprogress: 0.2.0
   pinia: 2.0.24_mgnvym7yiazkylwwogi5r767ue
+  v-contextmenu: 3.0.0_vue@3.2.45
   vue: 3.2.45
   vue-router: 4.1.6_vue@3.2.45
 
@@ -4152,6 +4154,15 @@ packages:
   /util-deprecate/1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
     dev: true
+
+  /v-contextmenu/3.0.0_vue@3.2.45:
+    resolution: {integrity: sha512-zi38JxmTt66TmljgV1JbfEa9WvoQkpzRuEwZK7Tjb2XoRejbWLozQtkyTWXJa6x6Y3FrVDfgT36w01gpTpo41A==}
+    engines: {node: '>=10.16.0'}
+    peerDependencies:
+      vue: ^3.0.0
+    dependencies:
+      vue: 3.2.45
+    dev: false
 
   /validate-npm-package-license/3.0.4:
     resolution: {integrity: sha512-DpKm2Ui/xN7/HQKCtpZxoRWBhZ9Z0kqtygG8XCgNQ8ZlDnxuQmWhj566j8fN4Cu3/JmbhsDo7fcAJq4s9h27Ew==}

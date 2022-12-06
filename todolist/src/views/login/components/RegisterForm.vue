@@ -12,20 +12,24 @@
             const m = reactive({
                 form: {
                     user_name : '',
-                    mobile    : '',
+                    email     : '',
                     password  : '',
                     confirm_password: '',
                 },
                 rules: {
-                    mobile    : [{ required: true, message: '手机号不能为空', tigger: 'change' }],
-                    password  : [{ required: true, message: '密码不能为空'  , tigger: 'change' }],
+                    email    : [
+                        { required: true, message: '邮箱不能为空', tigger: 'change' },
+                    ],
+                    password  : [
+                        { required: true, message: '密码不能为空'  , tigger: 'change' }
+                    ],
                     confirm_password: [
                         { validator: validConfirmPassword, tigger: 'change' }
                     ]
                 },
             })
 
-            // 处理登录或注册
+            // 处理注册
             const form_ref = ref()
             async function handleSubmit() {
                 const $form = form_ref.value
@@ -53,7 +57,7 @@
             function clearForm() {
                 m.form = {
                     user_name : '',
-                    mobile    : '',
+                    email     : '',
                     password  : '',
                     confirm_password: '',
                 }
@@ -83,27 +87,24 @@
             <ElFormItem prop="user_name" class="input-item">
                 <ElInput
                     v-model="m.form.user_name"
-                    :prefix-icon="Iphone"
                     clearable
                     size="large"
                     autocomplete="new-password"
                     placeholder="请输入用户名"
                 />
             </ElFormItem>
-            <ElFormItem :rules="m.rules.mobile" prop="mobile" class="input-item">
+            <ElFormItem :rules="m.rules.email" prop="email" class="input-item">
                 <ElInput
-                    v-model="m.form.mobile"
-                    :prefix-icon="Iphone"
+                    v-model="m.form.email"
                     clearable
                     size="large"
                     autocomplete="new-password"
-                    placeholder="请输入手机号"
+                    placeholder="请输入邮箱"
                 />
             </ElFormItem>
             <ElFormItem :rules="m.rules.password" prop="password" class="input-item">
                 <ElInput
                     v-model="m.form.password"
-                    :prefix-icon="Key"
                     type="password"
                     clearable
                     size="large"
@@ -115,7 +116,6 @@
             <ElFormItem :rules="m.rules.confirm_password" prop="confirm_password" class="input-item">
                 <ElInput
                     v-model="m.form.confirm_password"
-                    :prefix-icon="Key"
                     type="password"
                     clearable
                     size="large"
