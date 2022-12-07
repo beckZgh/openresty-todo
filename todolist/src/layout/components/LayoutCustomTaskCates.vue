@@ -130,12 +130,9 @@ export default defineComponent({
                             <div class="nav-item__title">
                                 {{ child.task_cate_name }}
                             </div>
-                            <div class="nav-item__qty">
-                                10
+                            <div v-if="taskStore.len$[child.task_cate_id]" class="nav-item__qty">
+                                {{ taskStore.len$[child.task_cate_id] || 10 }}
                             </div>
-                            <!-- <div v-if="todoStore.len$[child.task_cate_id]" class="nav-item__qty">
-                                {{ todoStore.len$[child.task_cate_id] || 10 }}
-                            </div> -->
                         </div>
                     </template>
                 </div>
@@ -180,6 +177,12 @@ export default defineComponent({
                         </VContextmenuItem>
                     </template>
                 </VContextmenuSubmenu>
+                <VContextmenuItem
+                    v-if="curr_item$?.task_cate_pid"
+                    @click="taskCateStore.handleTaskCateContextmenu('move')"
+                >
+                    从组中删除
+                </VContextmenuItem>
                 <VContextmenuItem @click="taskCateStore.handleTaskCateContextmenu('copy')" >
                     复制列表
                 </VContextmenuItem>
