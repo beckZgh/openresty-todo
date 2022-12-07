@@ -23,6 +23,7 @@ $api.dd.task_cate = {
          del : ['dd.task_cate', 'del'],
          get : ['dd.task_cate', 'get'],
         list : ['dd.task_cate', 'list'],
+        move : ['dd.task_cate', 'move'],
       rename : ['dd.task_cate', 'rename'],
 }
 

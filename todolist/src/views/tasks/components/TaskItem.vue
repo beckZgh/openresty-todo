@@ -5,7 +5,7 @@ import { defineComponent } from 'vue'
 export default defineComponent({
     name: 'TaskItem',
     props: {
-        item: { type: Object as PropType<$api.$dd_todo>, required: true }
+        item: { type: Object as PropType<$api.$dd_task>, required: true }
     },
 })
 </script>
@@ -23,7 +23,7 @@ export default defineComponent({
             <div class="task-item">
                 <div class="task-item-top">
                     <ElCheckbox></ElCheckbox>
-                    <span class="task-item-top__name">{{ item.todo_name }}</span>
+                    <span class="task-item-top__name">{{ item.task_name }}</span>
                     <ElIcon :size="20">
                         <component :is="item.is_important === 1 ? 'StarFilled' : 'Star'" />
                     </ElIcon>

@@ -3,6 +3,7 @@
     background-color: var(--layout-bg-color);
 }
 
+// 侧边栏区域
 .layout-aside {
     position: absolute;
     display: flex;
@@ -15,11 +16,12 @@
 
     &-header,
     &-footer,
-    .tasks-cate {
+    .custom-task-list {
         padding: 15px;
         box-sizing: border-box;
     }
 
+    // 侧边栏顶部区域
     &-header {
         padding: 0 15px 15px;
         border-bottom: 1px solid var(--el-border-color);
@@ -40,6 +42,7 @@
         overflow: hidden;
     }
 
+    // 侧边栏底部区域
     &-footer {
         display: flex;
         align-items: center;
@@ -55,7 +58,10 @@
         }
     }
 
-    .tasks-nav-item {
+
+    // 导航项
+    .nav-item,
+    .nav-submenu__title {
         position: relative;
         display: flex;
         align-items: center;
@@ -75,30 +81,32 @@
             background-color: var(--el-color-primary);
             color: var(--el-color-white);
         }
+    }
 
-        &__title {
-            padding: 0 15px;
-            flex: 1;
-            overflow: hidden;
-        }
+    .nav-submenu__arrow {
+        transition: transform .3s ease;
+    }
+
+    .nav-item__title,
+    .nav-submenu__title-content {
+        flex: 1;
+        padding: 0 15px;
+        overflow: hidden;
+    }
+
+    .nav-submenu.is-opened .nav-submenu__arrow {
+        transform: rotateZ(180deg);
+    }
+
+    .nav-submenu-body {
+        padding-left: 30px;
+        box-sizing: border-box;
+        overflow: hidden;
+        transition: max-height .3s ease;
     }
 }
 
-.layout-aside {
-    .el-menu {
-        border-right: 0;
-
-        > .el-menu-item {
-            padding-left: 10px !important;
-        }
-
-        .el-menu-item .el-icon {
-            width: auto;
-            margin-right: 0;
-        }
-    }
-}
-
+// 内容主区域
 .layout-main {
     position: absolute;
     left: var(--layout-aside-width);

@@ -7,10 +7,11 @@ import {
     useTaskCateStore,
 } from '@/store'
 
-import AppLogo from '@/components/AppLogo.vue'
+import AppLogo               from '@/components/AppLogo.vue'
+import LayoutCustomTaskCates from './components/LayoutCustomTaskCates.vue'
 
 export default defineComponent({
-    components: { AppLogo },
+    components: { AppLogo, LayoutCustomTaskCates },
     setup() {
         const appStore      = useAppStore()      // 应用数据
         const taskCateStore = useTaskCateStore() // 任务列表/分组数据
@@ -93,89 +94,30 @@ export default defineComponent({
                 <template v-for="item in appStore.navs$" :key="item.path" >
                     <div
                         v-if="item.show"
-                        class="tasks-nav-item"
+                        class="nav-item"
                         :class="{ 'is-active': $route.path === item.path }"
                         @click="handleSwitchNav(item)"
                     >
                         <ElIcon :size="16" >
                             <component :is="item.icon" />
                         </ElIcon>
-                        <div class="tasks-nav-item__title">
+                        <div class="nav-item__title">
                             {{ item.title }}
                         </div>
-                        <div v-if="todoStore.len$[item.id]" class="tasks-nav-item__qty">
+                        <div class="nav-item__qty">
+                            10
+                        </div>
+                        <div v-if="todoStore.len$[item.id]" class="nav-item__qty">
                             {{ todoStore.len$[item.id] }}
                         </div>
                     </div>
                 </template>
             </div>
 
-            <v-contextmenu ref="task_cate_contextmenu" >
-                <div style="width: 150px">
-                    <v-contextmenu-item @click="taskCateStore.handleTaskCateContextmenu('rename')" >重命名列表</v-contextmenu-item>
-                    <v-contextmenu-item @click="taskCateStore.handleTaskCateContextmenu('move')" >将列表移动到</v-contextmenu-item>
-                    <v-contextmenu-item @click="taskCateStore.handleTaskCateContextmenu('copy')" >复制列表</v-contextmenu-item>
-                    <v-contextmenu-item @click="taskCateStore.handleTaskCateContextmenu('remove')" >删除列表</v-contextmenu-item>
-                </div>
-            </v-contextmenu>
-
-            <v-contextmenu ref="task_cate_group_contextmenu" >
-                <div style="width: 150px">
-                    <v-contextmenu-item>重命名分组</v-contextmenu-item>
-                    <v-contextmenu-item>取消分组列表</v-contextmenu-item>
-                </div>
-            </v-contextmenu>
-
             <!-- 自定义列表 -->
             <div class="layout-aside-body">
                 <ElScrollbar height="100%">
-                    <div class="tasks-cate">
-                        <ElMenu :default-active="curr_nav_id$" >
-
-                            <template v-for="item in taskCateStore.task_cate_navs$" :key="item.task_cate_id" >
-                                <ElSubMenu v-if="item.children && item.children.length" :index="item.task_cate_id">
-                                    <template #title>
-                                        <div  v-contextmenu:task_cate_group_contextmenu>
-                                            {{ item.task_cate_name }}
-                                        </div>
-                                    </template>
-                                    <template v-for="child in item.children" :key="child.task_cate_id">
-                                        <ElMenuItem
-                                            class="tasks-nav-item"
-                                            :index="child.task_cate_id"
-                                            v-contextmenu:task_cate_contextmenu
-                                            @click="handleSwitchNav(item)"
-                                            @contextmenu.prevent="taskCateStore.setCurrContextmenuItem(item)"
-                                        >
-                                            <ElIcon :size="16"><Sort /></ElIcon>
-                                            <div class="tasks-nav-item__title">
-                                                {{ child.task_cate_name }}
-                                            </div>
-                                            <div v-if="todoStore.len$[child.task_cate_id]" class="tasks-nav-item__qty">
-                                                {{ todoStore.len$[child.task_cate_id] }}
-                                            </div>
-                                        </ElMenuItem>
-                                    </template>
-                                </ElSubMenu>
-                                <ElMenuItem
-                                    v-else
-                                    class="tasks-nav-item"
-                                    :index="item.task_cate_id"
-                                    v-contextmenu:task_cate_contextmenu
-                                    @contextmenu.prevent="taskCateStore.setCurrContextmenuItem(item)"
-                                    @click="handleSwitchNav(item)"
-                                >
-                                    <ElIcon :size="16"><Sort /></ElIcon>
-                                    <div class="tasks-nav-item__title">
-                                        {{ item.task_cate_name }}
-                                    </div>
-                                    <div v-if="todoStore.len$[item.task_cate_id]" class="tasks-nav-item__qty">
-                                        {{ todoStore.len$[item.task_cate_id] }}
-                                    </div>
-                                </ElMenuItem>
-                            </template>
-                        </ElMenu>
-                    </div>
+                    <LayoutCustomTaskCates @switch="handleSwitchNav" />
                 </ElScrollbar>
             </div>
 

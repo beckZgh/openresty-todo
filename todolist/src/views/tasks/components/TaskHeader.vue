@@ -19,7 +19,7 @@ export default defineComponent({
             const nav = appStore.curr_nav
             return {
                 icon : 'icon'  in nav ? nav.icon  : '',
-                title: 'title' in nav ? nav.title : nav.todo_cate_name,
+                title: 'title' in nav ? nav.title : nav.task_cate_name,
             }
         })
 

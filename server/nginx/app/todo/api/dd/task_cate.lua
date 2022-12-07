@@ -59,7 +59,7 @@ __.add = function(t)
 
     t.user_id        = t.user_id
     t.task_cate_id   = hashid.generate()
-    t.task_cate_pid  = t.todo_cate_pid  or ""
+    t.task_cate_pid  = t.task_cate_pid  or ""
     t.task_cate_name = t.task_cate_name or "无标题列表"
     t.task_cate_type = t.task_cate_type or 1
     t.list_index     = t.list_index     or -1
@@ -83,6 +83,36 @@ __.rename__ = {
 __.rename = function(t)
 
     local  tOld, err = __.get(t)
+    if not tOld then return nil, err end
+
+    -- 生成待更新的数据
+    -- @d : $dd_task_cate
+    local  d, wh = utils.gen_update(t, tOld, "user_id", "task_cate_id")
+    if not d then return tOld end
+
+    t.update_time = ngx.localtime()
+
+    local  ok, err = dd_task_cate.set(wh)
+    if not ok then return nil, err end
+
+    return __.get(t)
+
+end
+
+__.move__ = {
+    "移动列表至分组或取消分组",
+    req = {
+        { "user_id"        , "用户编码"             },
+        { "task_cate_id"   , "列表编码"             },
+        { "task_cate_pid?" , "列表/分组编码"        },
+    },
+    res = "$dd_task_cate"
+}
+__.move = function(t)
+
+    t.task_cate_pid = t.task_cate_pid or "" -- 未传入则表示取消分组
+
+    local  tOld, err = __.get({ user_id = t.user_id, task_cate_id = t.task_cate_id })
     if not tOld then return nil, err end
 
     -- 生成待更新的数据

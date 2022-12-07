@@ -180,6 +180,13 @@ declare namespace $api.dd.task_cate {
         /** 用户编码 */ user_id? : string ;
     }, opt?: Option): Response <$dd_task_cate[]>;
 
+    /** 移动列表至分组或取消分组 */
+    function move (req : {
+        /** 用户编码      */ user_id?       : string ;
+        /** 列表编码      */ task_cate_id   : string ;
+        /** 列表/分组编码 */ task_cate_pid? : string ;
+    }, opt?: Option): Response <$dd_task_cate>;
+
     /** 重命名待办事项列表/分组 */
     function rename (req : {
         /** 用户编码      */ user_id?       : string ;

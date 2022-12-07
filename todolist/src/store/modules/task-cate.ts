@@ -1,7 +1,5 @@
 import { defineStore } from 'pinia'
-import { reactive, toRefs, computed, ref } from 'vue'
-
-type TaskCateNav = $api.$dd_task_cate & { children?: $api.$dd_task_cate[] }
+import { reactive, toRefs, ref } from 'vue'
 
 export const useTaskCateStore = defineStore('task-cate', () => {
     const G = window.G || {}
@@ -15,34 +13,76 @@ export const useTaskCateStore = defineStore('task-cate', () => {
         curr_contextmenu_item : null as null | $api.$dd_task_cate
     })
 
-    // 任务列表导航
-    const task_cate_navs$ = computed(() => {
-        const map = new Map<string, TaskCateNav>()
-        const arr = [] as TaskCateNav[]
-        state.task_cates.forEach(item => {
-            if (item.task_cate_pid === '') {
-                const o = { ...item, children: [] }
-                map.set(o.task_cate_pid, o)
-                arr.push(o)
-            } else {
-                const children = map.get(item.task_cate_pid)?.children
-                children && children.push(item)
-            }
-        })
-        return arr
-    })
-
     // ---------------------------------------------------------------------------
     // 任务列表分组
-
+    const TaskGroupFormConfig =  [
+        {
+            id   : 'task_cate_name', name: '列表分组名称', tag: 'ElInput',
+            props: { placeholder: '请输入列表分组名称', autofocus: true },
+            rules: [{ required: true, message: '列表分组不能为空' }]
+        }
+    ]
     // 添加任务列表分组
-    function addTaskCateGroup() {}
+    async function addTaskCateGroup() {
+        const $form_dialog = form_dialog_ref.value
+        if ( !$form_dialog ) return
+
+        $form_dialog.show({
+            title : '新建列表分组',
+            config: TaskGroupFormConfig,
+            submit: async (model: { task_cate_name: string }) => {
+                const res = await $api.dd.task_cate.add({ ...model, task_cate_type: 0 })
+                if (res.ok) {
+                    state.task_cates.push(res.data)
+                }
+                return res.ok
+            }
+        })
+    }
 
     // 重命名任务列表分组名称
-    function renameTaskCateGroup() {}
+    async function renameTaskCateGroup() {
+        const $form_dialog = form_dialog_ref.value
+        if ( !$form_dialog ) return
+
+        const item = state.curr_contextmenu_item!
+        $form_dialog.show({
+            title : '重命名分组列表',
+            config: TaskGroupFormConfig,
+            model : { task_cate_name: item.task_cate_name },
+            submit: async (model: { task_cate_name: string }) => {
+                const res = await $api.dd.task_cate.rename({ ...model, task_cate_id: item.task_cate_id})
+                if (res.ok) {
+                    $utils.arr.replace(state.task_cates, res.data, 'task_cate_id')
+                }
+                return res.ok
+            }
+        })
+    }
 
     // 取消任务列表分组
-    function delTaskCateGroup() {}
+    async function delTaskCateGroup() {
+        const confirm = await $utils.showConfirm('是否取消当前分组列表')
+        if ( !confirm ) return
+
+        const item = state.curr_contextmenu_item!
+        const res  = await $api.dd.task_cate.del({ task_cate_id: item.task_cate_id })
+        if ( !res.ok ) return
+
+        $utils.arr.del(state.task_cates, item, 'task_cate_id')
+    }
+
+    // 右键菜单指令
+    function handleTaskCateGroupContextmenu(command: 'rename' | 'add' | 'remove') {
+        const item = state.curr_contextmenu_item
+        if ( !item ) return
+
+        switch(command) {
+            case 'rename': return renameTaskCateGroup()
+            case 'add'   : return addTaskCate()
+            case 'remove': return delTaskCateGroup()
+        }
+    }
 
     // ---------------------------------------------------------------------------
 
@@ -51,9 +91,9 @@ export const useTaskCateStore = defineStore('task-cate', () => {
 
     const TaskFormConfig =  [
         {
-            id   : 'task_cate_name', name: '任务名称', tag: 'ElInput',
-            props: { placeholder: '请输入任务名称' },
-            rules: [{ required: true, message: '任务名称不能为空' }]
+            id   : 'task_cate_name', name: '列表名称', tag: 'ElInput',
+            props: { placeholder: '请输入列表名称', autofocus: true },
+            rules: [{ required: true, message: '列表名称不能为空' }]
         }
     ]
     // 添加任务列表
@@ -61,11 +101,13 @@ export const useTaskCateStore = defineStore('task-cate', () => {
         const $form_dialog = form_dialog_ref.value
         if ( !$form_dialog ) return
 
+        const item  = state.curr_contextmenu_item
+        const title = '新建列表'
         $form_dialog.show({
-            title : '新建列表',
+            title : item ? `${ title } - ${ item.task_cate_name }` : title,
             config: TaskFormConfig,
             submit: async (model: { task_cate_name: string }) => {
-                const res = await $api.dd.task_cate.add(model)
+                const res = await $api.dd.task_cate.add({ ...model, task_cate_pid: item?.task_cate_id })
                 if (res.ok) {
                     state.task_cates.push(res.data)
                 }
@@ -95,14 +137,25 @@ export const useTaskCateStore = defineStore('task-cate', () => {
     }
 
     // 移动任务列表
-    function moveTaskCate() {}
+    async function moveTaskCate(item?: $api.$dd_task_cate) {
+        const curr_item = state.curr_contextmenu_item!
+        const res = await $api.dd.task_cate.move({
+            task_cate_id : curr_item.task_cate_id,
+            task_cate_pid: item?.task_cate_id,
+        })
+        if (!res.ok) return
+
+        $utils.arr.replace(state.task_cates, res.data, 'task_cate_id')
+    }
 
     // 复制任务列表
-    function copyTaskCate() {}
+    function copyTaskCate(item: $api.$dd_task_cate) {
+        $utils.showAlert('正在努力开发中...')
+    }
 
     // 删除任务列表
     async function delTaskCate() {
-        const confirm = await $utils.showConfirm('是否删除当前项')
+        const confirm = await $utils.showConfirm('是否删除当前列表')
         if ( !confirm ) return
 
         const item = state.curr_contextmenu_item!
@@ -120,14 +173,13 @@ export const useTaskCateStore = defineStore('task-cate', () => {
     }
 
     // 右键菜单指令
-    function handleTaskCateContextmenu(command: 'rename' | 'move' | 'copy' | 'remove') {
-        const item = state.curr_contextmenu_item
-        if ( !item ) return
+    function handleTaskCateContextmenu(command: 'rename' | 'move' | 'copy' | 'remove', item?: $api.$dd_task_cate) {
+        if (!state.curr_contextmenu_item) return
 
         switch(command) {
             case 'rename': return renameTaskCate()
-            case 'move'  : return moveTaskCate()
-            case 'copy'  : return copyTaskCate()
+            case 'move'  : return moveTaskCate(item)
+            case 'copy'  : return copyTaskCate(item!)
             case 'remove': return delTaskCate()
         }
     }
@@ -144,8 +196,8 @@ export const useTaskCateStore = defineStore('task-cate', () => {
 
     return {
         ...toRefs(state),
-        task_cate_navs$,
         clear,
+        handleTaskCateGroupContextmenu,
         handleTaskCateContextmenu,
         setCurrContextmenuItem,
         setFormDialogRef,
