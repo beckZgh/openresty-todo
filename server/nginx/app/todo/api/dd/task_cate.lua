@@ -165,4 +165,31 @@ __.del = function(t)
 
 end
 
+__.sort__ = {
+    "排序待办事项列表/分组",
+    log = true,
+    req = {
+        { "user_id", "用户编码"                     },
+        { "ids"    , "待办事项列表编码", "string[]" },
+    },
+    res = "boolean"
+}
+__.sort = function(t)
+
+    if #t.ids == 0 then return nil, "列表编码列表不能为空" end
+
+    -- 构造对应的编码设置对象的排序值
+    local sqls = {}
+    for i, id in ipairs(t.ids) do
+        sqls[i] = dd_task_cate:set { user_id = t.user_id, task_cate_id = id, { list_index = i } }
+    end
+
+    -- 事务执行
+    local  ok, err = db.trans(sqls)
+    if not ok then return nil, err end
+
+    return true
+
+end
+
 return __

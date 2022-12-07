@@ -23,20 +23,21 @@ export const useTaskCateStore = defineStore('task-cate', () => {
         }
     ]
     // 添加任务列表分组
-    async function addTaskCateGroup() {
-        const $form_dialog = form_dialog_ref.value
-        if ( !$form_dialog ) return
+    function addTaskCateGroup(): Promise<{ ok: boolean; err?: string; data?: $api.$dd_task_cate }> {
+        return new Promise((resolve) => {
+            const $form_dialog = form_dialog_ref.value
+            if ( !$form_dialog ) return resolve({ ok: false })
 
-        $form_dialog.show({
-            title : '新建列表分组',
-            config: TaskGroupFormConfig,
-            submit: async (model: { task_cate_name: string }) => {
-                const res = await $api.dd.task_cate.add({ ...model, task_cate_type: 0 })
-                if (res.ok) {
-                    state.task_cates.push(res.data)
+            $form_dialog.show({
+                title : '新建列表分组',
+                config: TaskGroupFormConfig,
+                submit: async (model: { task_cate_name: string }) => {
+                    const res = await $api.dd.task_cate.add({ ...model, task_cate_type: 0 })
+                    if (res.ok) state.task_cates.push(res.data)
+                    resolve(res)
+                    return res.ok
                 }
-                return res.ok
-            }
+            })
         })
     }
 
@@ -63,25 +64,15 @@ export const useTaskCateStore = defineStore('task-cate', () => {
     // 取消任务列表分组
     async function delTaskCateGroup() {
         const confirm = await $utils.showConfirm('是否取消当前分组列表')
-        if ( !confirm ) return
+        if ( !confirm ) return { ok: false }
 
         const item = state.curr_contextmenu_item!
         const res  = await $api.dd.task_cate.del({ task_cate_id: item.task_cate_id })
-        if ( !res.ok ) return
+        if ( !res.ok ) return { ok: false }
 
         $utils.arr.del(state.task_cates, item, 'task_cate_id')
-    }
 
-    // 右键菜单指令
-    function handleTaskCateGroupContextmenu(command: 'rename' | 'add' | 'remove') {
-        const item = state.curr_contextmenu_item
-        if ( !item ) return
-
-        switch(command) {
-            case 'rename': return renameTaskCateGroup()
-            case 'add'   : return addTaskCate()
-            case 'remove': return delTaskCateGroup()
-        }
+        return res
     }
 
     // ---------------------------------------------------------------------------
@@ -172,18 +163,6 @@ export const useTaskCateStore = defineStore('task-cate', () => {
         state.task_cates = []
     }
 
-    // 右键菜单指令
-    function handleTaskCateContextmenu(command: 'rename' | 'move' | 'copy' | 'remove', item?: $api.$dd_task_cate) {
-        if (!state.curr_contextmenu_item) return
-
-        switch(command) {
-            case 'rename': return renameTaskCate()
-            case 'move'  : return moveTaskCate(item)
-            case 'copy'  : return copyTaskCate(item!)
-            case 'remove': return delTaskCate()
-        }
-    }
-
     // 设置当前右键编辑项
     function setCurrContextmenuItem(item: $api.$dd_task_cate) {
         state.curr_contextmenu_item = item
@@ -197,8 +176,6 @@ export const useTaskCateStore = defineStore('task-cate', () => {
     return {
         ...toRefs(state),
         clear,
-        handleTaskCateGroupContextmenu,
-        handleTaskCateContextmenu,
         setCurrContextmenuItem,
         setFormDialogRef,
         // ----------------------

@@ -1,7 +1,8 @@
 <script lang="ts">
-import { defineComponent, computed, ref, watch } from 'vue'
+import { defineComponent, computed, ref, watch, onMounted } from 'vue'
 import { useTaskCateStore, useTaskStore } from '@/store'
 import { useRouter } from 'vue-router'
+import Sortable from 'sortablejs'
 
 type NavSubmenuItem = $api.$dd_task_cate & { children: $api.$dd_task_cate[]; opened: boolean; }
 type NavItem        = $api.$dd_task_cate | NavSubmenuItem
@@ -14,11 +15,12 @@ export default defineComponent({
     emits: ['switch'],
     setup() {
 
-        const $router       = useRouter()
-        const taskCateStore = useTaskCateStore()
-        const taskStore     = useTaskStore()
-        const navs          = ref<NavItem[]>([])
-        const opened_ids    = ref<string[]>([]) // 展开的分组
+        const $router           = useRouter()
+        const taskCateStore     = useTaskCateStore()
+        const taskStore         = useTaskStore()
+        const navs              = ref<NavItem[]>([])
+        const opened_ids        = ref<string[]>([]) // 展开的分组
+        const sortable_instance = {} as Record<string, InstanceType<typeof Sortable>>
 
         // 当前右键菜单编辑项
         const curr_item$ = computed(() => taskCateStore.curr_contextmenu_item)
@@ -28,21 +30,24 @@ export default defineComponent({
 
         // 更新自定义列表
         watch(() => taskCateStore.task_cates, (task_cates) => {
-            const map = {} as Record<string, NavSubmenuItem>
+            const map = {} as Record<string, NavItem[]>
             const arr = [] as NavSubmenuItem[]
 
             task_cates.forEach(item => {
-                if (item.task_cate_pid === '') {
+                if (item.task_cate_pid) {
+                    map[item.task_cate_pid] = (map[item.task_cate_pid] || []) as NavItem[]
+                    map[item.task_cate_pid].push(item)
+                }
+            })
+
+            task_cates.forEach(item => {
+                if (!item.task_cate_pid) {
                     const o = {
                         ...item ,
                         opened  : opened_ids.value.includes(item.task_cate_id),
-                        children: []
+                        children: map[item.task_cate_id] || []
                     }
-                    map[item.task_cate_id] = o
                     arr.push(o)
-                } else {
-                    const nav = map[item.task_cate_pid]
-                    nav && nav.children!.push(item)
                 }
             })
 
@@ -79,20 +84,120 @@ export default defineComponent({
             item.opened = opened
         }
 
+        // 列表右键菜单指令
+        function handleTaskCateContextmenu(command: 'rename' | 'move' | 'copy' | 'remove', item?: $api.$dd_task_cate) {
+            if (!taskCateStore.curr_contextmenu_item) return
+
+            switch(command) {
+                case 'rename': return taskCateStore.renameTaskCate()
+                case 'move'  : return taskCateStore.moveTaskCate(item)
+                case 'copy'  : return taskCateStore.copyTaskCate(item!)
+                case 'remove': return taskCateStore.delTaskCate()
+            }
+        }
+
+        // 列表分组右键菜单指令
+        async function handleTaskCateGroupContextmenu(command: 'rename' | 'add' | 'remove') {
+            const item = taskCateStore.curr_contextmenu_item
+            if ( !item ) return
+
+            switch(command) {
+                case 'add'   : {
+                    const res = await taskCateStore.addTaskCateGroup()
+                    if (res.ok) updateSortableContainer()
+                    return
+                }
+                case 'rename': return taskCateStore.renameTaskCateGroup()
+                case 'remove': {
+                    const res = await taskCateStore.delTaskCateGroup()
+                    if (res.ok) {
+                        sortable_instance[item.task_cate_id]?.destroy()
+                    }
+                    return
+                }
+            }
+        }
+
+        onMounted(() => {
+            const el = document.getElementById('task-list')
+            if ( !el ) return
+
+            // 一级列表排序容器
+            new Sortable(el, {
+                group    : 'task',
+                animation: 150,
+                onEnd: async (evt) => {
+                    sortList({ oldIndex: evt.oldIndex!, newIndex: evt.newIndex! }, navs.value)
+                },
+            })
+
+            // 分组列表
+            updateSortableContainer()
+        })
+
+        // 更新排序列表容器
+        function updateSortableContainer() {
+            // 清除已有实例
+            Object.entries(sortable_instance).forEach(([_, item]) => {
+                item.destroy()
+            })
+
+            // 重新创建
+            document.querySelectorAll('.nav-submenu-body').forEach((el) => {
+                const id = el.getAttribute('data-id')
+                if ( !id ) return
+
+                const item = navs.value.find(item => item.task_cate_id === id && item.task_cate_type === 0) as NavSubmenuItem
+                if ( !item ) return
+
+                // 缓存当前实例
+                sortable_instance[id] = new Sortable(el as HTMLElement, {
+                    group    : `task_${ id }`,
+                    animation: 150,
+                    onEnd: async (evt) => {
+                        sortList({ oldIndex: evt.oldIndex!, newIndex: evt.newIndex! }, item.children)
+                    },
+                })
+            })
+        }
+
+        // 排序列表
+        function sortList(evt: { oldIndex: number; newIndex: number }, list: { task_cate_id: string; list_index: number }[]) {
+            // 取得拖拽前的顺序
+            const old_ids = list.map(item => item.task_cate_id)
+
+            // 保持列表拖拽顺序
+            const oldIndex = evt.oldIndex!
+            const newIndex = evt.newIndex!
+            const item = list.splice(oldIndex, 1)[0]!
+            list.splice(newIndex, 0, item)
+            list.forEach((item, idx) => {
+                item.list_index = idx
+            })
+
+            // 未发生顺序变化，不发送请求
+            const ids = list.map(item => item.task_cate_id)
+            if (old_ids.join('') === ids.join('')) return
+
+            $api.dd.task_cate.sort({ ids }, { showLoding: true })
+        }
+
         return {
             navs,
             curr_item$,
             group_navs$,
             taskCateStore,
             taskStore,
-            handleNavGroupClick
+            handleNavGroupClick,
+            handleTaskCateContextmenu,
+            handleTaskCateGroupContextmenu
         }
     }
 })
 </script>
 
 <template>
-    <div class="custom-task-list">
+    <div class="custom-task-list" id="task-list">
         <template v-for="item in navs" :key="item.task_cate_id" >
             <div
                 v-if="item.task_cate_type === 0 && 'children' in item"
@@ -115,6 +220,7 @@ export default defineComponent({
                 <div
                     class="nav-submenu-body"
                     :style="{ maxHeight: item.opened ? `${ item.children.length * 36 }px` : 0 }"
+                    :data-id="item.task_cate_id"
                     @contextmenu.stop
                 >
                     <template v-for="child in item.children" :key="child.task_cate_id">
@@ -163,7 +269,7 @@ export default defineComponent({
     <VContextmenu ref="contextmenu" >
         <div style="width: 150px">
             <template v-if="curr_item$?.task_cate_type === 1">
-                <VContextmenuItem @click="taskCateStore.handleTaskCateContextmenu('rename')" >
+                <VContextmenuItem @click="handleTaskCateContextmenu('rename')" >
                     重命名列表
                 </VContextmenuItem>
                 <VContextmenuSubmenu title="将列表移动到">
@@ -171,7 +277,7 @@ export default defineComponent({
                         <VContextmenuItem
                             style="width: 150px"
                             v-if="group.task_cate_id !== curr_item$.task_cate_pid"
-                            @click="taskCateStore.handleTaskCateContextmenu('move', group)"
+                            @click="handleTaskCateContextmenu('move', group)"
                         >
                             {{ group.task_cate_name }}
                         </VContextmenuItem>
@@ -179,25 +285,25 @@ export default defineComponent({
                 </VContextmenuSubmenu>
                 <VContextmenuItem
                     v-if="curr_item$?.task_cate_pid"
-                    @click="taskCateStore.handleTaskCateContextmenu('move')"
+                    @click="handleTaskCateContextmenu('move')"
                 >
                     从组中删除
                 </VContextmenuItem>
-                <VContextmenuItem @click="taskCateStore.handleTaskCateContextmenu('copy')" >
+                <VContextmenuItem @click="handleTaskCateContextmenu('copy')" >
                     复制列表
                 </VContextmenuItem>
-                <VContextmenuItem @click="taskCateStore.handleTaskCateContextmenu('remove')" >
+                <VContextmenuItem @click="handleTaskCateContextmenu('remove')" >
                     删除列表
                 </VContextmenuItem>
             </template>
             <template v-if="curr_item$?.task_cate_type === 0">
-                <VContextmenuItem @click="taskCateStore.handleTaskCateGroupContextmenu('rename')" >
+                <VContextmenuItem @click="handleTaskCateGroupContextmenu('rename')" >
                     重命名分组
                 </VContextmenuItem>
-                <VContextmenuItem @click="taskCateStore.handleTaskCateGroupContextmenu('add')" >
+                <VContextmenuItem @click="handleTaskCateGroupContextmenu('add')" >
                     新建列表
                 </VContextmenuItem>
-                <VContextmenuItem @click="taskCateStore.handleTaskCateGroupContextmenu('remove')" >
+                <VContextmenuItem @click="handleTaskCateGroupContextmenu('remove')" >
                     取消分组
                 </VContextmenuItem>
             </template>

@@ -25,6 +25,7 @@ $api.dd.task_cate = {
         list : ['dd.task_cate', 'list'],
         move : ['dd.task_cate', 'move'],
       rename : ['dd.task_cate', 'rename'],
+        sort : ['dd.task_cate', 'sort'],
 }
 
 $api.pv = {

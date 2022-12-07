@@ -5,6 +5,7 @@ specifiers:
   '@sumdoo/eslint-config': ^1.0.9
   '@types/crypto-js': ^4.1.1
   '@types/node': ^18.11.9
+  '@types/sortablejs': ^1.15.0
   '@vitejs/plugin-vue': ^3.2.0
   axios: ^1.1.3
   crypto-js: ^4.1.1
@@ -15,6 +16,7 @@ specifiers:
   nprogress: ^0.2.0
   pinia: ^2.0.24
   sass: ^1.56.1
+  sortablejs: ^1.15.0
   typescript: ^4.9.3
   v-contextmenu: ^3.0.0
   vite: ^3.2.3
@@ -34,6 +36,7 @@ dependencies:
   normalize.css: 8.0.1
   nprogress: 0.2.0
   pinia: 2.0.24_mgnvym7yiazkylwwogi5r767ue
+  sortablejs: 1.15.0
   v-contextmenu: 3.0.0_vue@3.2.45
   vue: 3.2.45
   vue-router: 4.1.6_vue@3.2.45
@@ -42,6 +45,7 @@ devDependencies:
   '@sumdoo/eslint-config': 1.0.9_hsf322ms6xhhd4b5ne6lb74y4a
   '@types/crypto-js': 4.1.1
   '@types/node': 18.11.9
+  '@types/sortablejs': 1.15.0
   '@vitejs/plugin-vue': 3.2.0_vite@3.2.4+vue@3.2.45
   eslint: 8.28.0
   sass: 1.56.1
@@ -384,6 +388,10 @@ packages:
 
   /@types/semver/7.3.13:
     resolution: {integrity: sha512-21cFJr9z3g5dW8B0CVI9g2O9beqaThGQ6ZFBqHfwhzLDKUxaqTIy3vnfah/UPkfOiF2pLq+tGz+W8RyCskuslw==}
+    dev: true
+
+  /@types/sortablejs/1.15.0:
+    resolution: {integrity: sha512-qrhtM7M41EhH4tZQTNw2/RJkxllBx3reiJpTbgWCM2Dx0U1sZ6LwKp9lfNln9uqE26ZMKUaPEYaD4rzvOWYtZw==}
     dev: true
 
   /@types/svgo/2.6.4:
@@ -3770,6 +3778,10 @@ packages:
     transitivePeerDependencies:
       - supports-color
     dev: true
+
+  /sortablejs/1.15.0:
+    resolution: {integrity: sha512-bv9qgVMjUMf89wAvM6AxVvS/4MX3sPeN0+agqShejLU5z5GX4C75ow1O2e5k4L6XItUyAK3gH6AxSbXrOM5e8w==}
+    dev: false
 
   /source-map-js/1.0.2:
     resolution: {integrity: sha512-R0XvVJ9WusLiqTCEiGCmICCMplcCkIwwR11mOSD9CR5u+IXYdiseeEuXCVAjS54zqwkLcPNnmU4OeJ6tUrWhDw==}

@@ -194,6 +194,12 @@ declare namespace $api.dd.task_cate {
         /** 列表/分组名称 */ task_cate_name : string ;
     }, opt?: Option): Response <$dd_task_cate>;
 
+    /** 排序待办事项列表/分组 */
+    function sort (req : {
+        /** 用户编码         */ user_id? : string   ;
+        /** 待办事项列表编码 */ ids      : string[] ;
+    }, opt?: Option): Response <boolean>;
+
 }
 
 declare namespace $api.pv {  // v22.11.28
