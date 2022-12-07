@@ -255,9 +255,6 @@ export default defineComponent({
                 <div class="nav-item__title">
                     {{ item.task_cate_name }}
                 </div>
-                <div class="nav-item__qty">
-                    10
-                </div>
                 <div v-if="taskStore.len$[item.task_cate_id]" class="nav-item__qty">
                     {{ taskStore.len$[item.task_cate_id] }}
                 </div>
@@ -267,43 +264,58 @@ export default defineComponent({
 
     <!-- 自定义列表右键菜单 -->
     <VContextmenu ref="contextmenu" >
-        <div style="width: 150px">
+        <div style="width: 160px">
             <template v-if="curr_item$?.task_cate_type === 1">
                 <VContextmenuItem @click="handleTaskCateContextmenu('rename')" >
+                    <ElIcon><Edit/></ElIcon>
                     重命名列表
                 </VContextmenuItem>
-                <VContextmenuSubmenu title="将列表移动到">
+                <VContextmenuSubmenu>
+                    <template #title>
+                        <ElIcon><Folder /></ElIcon>
+                        将列表移动到
+                    </template>
+
                     <template v-for="group in group_navs$" :key="group.task_cate_id">
                         <VContextmenuItem
                             style="width: 150px"
+
                             v-if="group.task_cate_id !== curr_item$.task_cate_pid"
                             @click="handleTaskCateContextmenu('move', group)"
                         >
+                            <ElIcon><Folder /></ElIcon>
                             {{ group.task_cate_name }}
                         </VContextmenuItem>
                     </template>
                 </VContextmenuSubmenu>
                 <VContextmenuItem
                     v-if="curr_item$?.task_cate_pid"
+
                     @click="handleTaskCateContextmenu('move')"
                 >
+                    <ElIcon><FolderRemove /></ElIcon>
                     从组中删除
                 </VContextmenuItem>
                 <VContextmenuItem @click="handleTaskCateContextmenu('copy')" >
+                    <ElIcon><CopyDocument /></ElIcon>
                     复制列表
                 </VContextmenuItem>
                 <VContextmenuItem @click="handleTaskCateContextmenu('remove')" >
+                    <ElIcon><Delete  /></ElIcon>
                     删除列表
                 </VContextmenuItem>
             </template>
             <template v-if="curr_item$?.task_cate_type === 0">
                 <VContextmenuItem @click="handleTaskCateGroupContextmenu('rename')" >
+                    <ElIcon><Edit/></ElIcon>
                     重命名分组
                 </VContextmenuItem>
                 <VContextmenuItem @click="handleTaskCateGroupContextmenu('add')" >
+                    <ElIcon><DocumentAdd /></ElIcon>
                     新建列表
                 </VContextmenuItem>
                 <VContextmenuItem @click="handleTaskCateGroupContextmenu('remove')" >
+                    <ElIcon><FolderDelete /></ElIcon>
                     取消分组
                 </VContextmenuItem>
             </template>

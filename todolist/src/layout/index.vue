@@ -104,9 +104,6 @@ export default defineComponent({
                         <div class="nav-item__title">
                             {{ item.title }}
                         </div>
-                        <div class="nav-item__qty">
-                            10
-                        </div>
                         <div v-if="todoStore.len$[item.id]" class="nav-item__qty">
                             {{ todoStore.len$[item.id] }}
                         </div>

@@ -1,7 +1,7 @@
 import 'normalize.css'
 import 'element-plus/dist/index.css'
 import 'element-plus/theme-chalk/dark/css-vars.css' // 暗黑主题
-import 'v-contextmenu/dist/themes/default.css';
+import 'v-contextmenu/dist/themes/default.css'
 import './styles/index.scss'
 
 import './utils'

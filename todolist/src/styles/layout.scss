@@ -114,3 +114,15 @@
     right: 0;
     bottom: 0;
 }
+
+.v-contextmenu-submenu__title,
+.v-contextmenu-item {
+    display: flex;
+    align-items: center;
+    height: 32px;
+
+    .el-icon {
+        font-size: 16px;
+        margin-right: 8px;
+    }
+}
