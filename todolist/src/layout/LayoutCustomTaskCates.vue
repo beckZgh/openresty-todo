@@ -2,6 +2,8 @@
 import { defineComponent, computed, ref, watch, onMounted } from 'vue'
 import { useTaskCateStore, useTaskStore } from '@/store'
 import { useRouter } from 'vue-router'
+
+import AppFormDialog from '@/components/AppFormDialog.vue'
 import Sortable from 'sortablejs'
 
 type NavSubmenuItem = $api.$dd_task_cate & { children: $api.$dd_task_cate[]; opened: boolean; }
@@ -9,12 +11,14 @@ type NavItem        = $api.$dd_task_cate | NavSubmenuItem
 
 export default defineComponent({
     name: 'LayoutCustomTaskCates',
+    components: { AppFormDialog },
     props: {
         size: { type: Number, default: 30 }
     },
     emits: ['switch'],
     setup() {
-
+        const form_dialog_ref   = ref()
+        const contextmenu_ref   = ref()
         const $router           = useRouter()
         const taskCateStore     = useTaskCateStore()
         const taskStore         = useTaskStore()
@@ -23,7 +27,7 @@ export default defineComponent({
         const sortable_instance = {} as Record<string, InstanceType<typeof Sortable>>
 
         // 当前右键菜单编辑项
-        const curr_item$ = computed(() => taskCateStore.curr_contextmenu_item)
+        const curr_item$ = computed(() => taskCateStore.curr_edit_item)
 
         // 自定义列表分组
         const group_navs$ = computed(() => navs.value.filter(item => item.task_cate_type === 0))
@@ -85,8 +89,8 @@ export default defineComponent({
         }
 
         // 列表右键菜单指令
-        function handleTaskCateContextmenu(command: 'rename' | 'move' | 'copy' | 'remove', item?: $api.$dd_task_cate) {
-            if (!taskCateStore.curr_contextmenu_item) return
+        async function handleTaskCateContextmenu(command: 'rename' | 'move' | 'copy' | 'remove', item?: $api.$dd_task_cate) {
+            if (!taskCateStore.curr_edit_item) return
 
             switch(command) {
                 case 'rename': return taskCateStore.renameTaskCate()
@@ -98,27 +102,27 @@ export default defineComponent({
 
         // 列表分组右键菜单指令
         async function handleTaskCateGroupContextmenu(command: 'rename' | 'add' | 'remove') {
-            const item = taskCateStore.curr_contextmenu_item
+            const item = taskCateStore.curr_edit_item
             if ( !item ) return
 
             switch(command) {
-                case 'add'   : {
-                    const res = await taskCateStore.addTaskCateGroup()
-                    if (res.ok) updateSortableContainer()
-                    return
-                }
+                case 'add'   : return taskCateStore.addTaskCateGroup()
                 case 'rename': return taskCateStore.renameTaskCateGroup()
-                case 'remove': {
-                    const res = await taskCateStore.delTaskCateGroup()
-                    if (res.ok) {
-                        sortable_instance[item.task_cate_id]?.destroy()
-                    }
-                    return
-                }
+                case 'remove': return taskCateStore.delTaskCateGroup()
             }
         }
 
         onMounted(() => {
+            // 绑定当前弹窗表单组件
+            taskCateStore.setFormDialogRef(form_dialog_ref.value)
+            taskCateStore.setContextmenuRef(contextmenu_ref.value)
+
+            updateCustomNavsSortContainer()
+            updateCustomNavSubmenusSortContainer()
+        })
+
+        // 更新排序列表
+        function updateCustomNavsSortContainer() {
             const el = document.getElementById('task-list')
             if ( !el ) return
 
@@ -130,13 +134,10 @@ export default defineComponent({
                     sortList({ oldIndex: evt.oldIndex!, newIndex: evt.newIndex! }, navs.value)
                 },
             })
-
-            // 分组列表
-            updateSortableContainer()
-        })
+        }
 
         // 更新排序列表容器
-        function updateSortableContainer() {
+        function updateCustomNavSubmenusSortContainer() {
             // 清除已有实例
             Object.entries(sortable_instance).forEach(([_, item]) => {
                 item.destroy()
@@ -184,6 +185,8 @@ export default defineComponent({
 
         return {
             navs,
+            form_dialog_ref,
+            contextmenu_ref,
             curr_item$,
             group_navs$,
             taskCateStore,
@@ -197,6 +200,8 @@ export default defineComponent({
 </script>
 
 <template>
+    <AppFormDialog ref="form_dialog_ref" />
+
     <div class="custom-task-list" id="task-list">
         <template v-for="item in navs" :key="item.task_cate_id" >
             <div
@@ -207,8 +212,8 @@ export default defineComponent({
             >
                 <div
                     class="nav-submenu__title"
-                    v-contextmenu:contextmenu
-                    @contextmenu.prevent="taskCateStore.setCurrContextmenuItem(item)"
+                    v-contextmenu:contextmenu_ref
+                    @contextmenu.prevent="taskCateStore.setCurrEditItem(item)"
                     @click="handleNavGroupClick(item)"
                 >
                     <ElIcon :size="16"><Folder /></ElIcon>
@@ -219,7 +224,7 @@ export default defineComponent({
                 </div>
                 <div
                     class="nav-submenu-body"
-                    :style="{ maxHeight: item.opened ? `${ item.children.length * 36 }px` : 0 }"
+                    :style="{ maxHeight: item.opened ? `${ item.children.length * (36 + 2) }px` : 0 }"
                     :data-id="item.task_cate_id"
                     @contextmenu.stop
                 >
@@ -228,16 +233,16 @@ export default defineComponent({
                             class="nav-item"
                             :class="{ 'is-active': $route.params.id === child.task_cate_id }"
                             :index="child.task_cate_id"
-                            v-contextmenu:contextmenu
-                            @contextmenu.prevent="taskCateStore.setCurrContextmenuItem(child)"
+                            v-contextmenu:contextmenu_ref
+                            @contextmenu.prevent="taskCateStore.setCurrEditItem(child)"
                             @click="$emit('switch', child)"
                         >
                             <ElIcon :size="16"><Sort /></ElIcon>
                             <div class="nav-item__title">
                                 {{ child.task_cate_name }}
                             </div>
-                            <div v-if="taskStore.len$[child.task_cate_id]" class="nav-item__qty">
-                                {{ taskStore.len$[child.task_cate_id] || 10 }}
+                            <div v-if="(taskStore.task$[child.task_cate_id] || []).length" class="nav-item__qty">
+                                {{ taskStore.task$[child.task_cate_id].length }}
                             </div>
                         </div>
                     </template>
@@ -247,30 +252,30 @@ export default defineComponent({
                 v-else
                 class="nav-item"
                 :class="{ 'is-active': $route.params.id === item.task_cate_id }"
-                v-contextmenu:contextmenu
-                @contextmenu.prevent="taskCateStore.setCurrContextmenuItem(item)"
+                v-contextmenu:contextmenu_ref
+                @contextmenu.prevent="taskCateStore.setCurrEditItem(item)"
                 @click="$emit('switch', item)"
             >
                 <ElIcon :size="16"><Sort /></ElIcon>
                 <div class="nav-item__title">
                     {{ item.task_cate_name }}
                 </div>
-                <div v-if="taskStore.len$[item.task_cate_id]" class="nav-item__qty">
-                    {{ taskStore.len$[item.task_cate_id] }}
+                <div v-if="(taskStore.task$[item.task_cate_id] || []).length" class="nav-item__qty">
+                    {{ taskStore.task$[item.task_cate_id].length }}
                 </div>
             </div>
         </template>
     </div>
 
     <!-- 自定义列表右键菜单 -->
-    <VContextmenu ref="contextmenu" >
+    <VContextmenu ref="contextmenu_ref" >
         <div style="width: 160px">
             <template v-if="curr_item$?.task_cate_type === 1">
                 <VContextmenuItem @click="handleTaskCateContextmenu('rename')" >
                     <ElIcon><Edit/></ElIcon>
                     重命名列表
                 </VContextmenuItem>
-                <VContextmenuSubmenu>
+                <VContextmenuSubmenu title="">
                     <template #title>
                         <ElIcon><Folder /></ElIcon>
                         将列表移动到

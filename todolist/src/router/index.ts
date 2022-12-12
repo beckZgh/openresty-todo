@@ -19,26 +19,6 @@ export const router = createRouter({
             component: Layout,
             children: [
                 {
-                    path: 'myday',
-                    name: 'TasksMyday',
-                    component: () => import('@/views/tasks/list.vue')
-                },
-                {
-                    path: 'important',
-                    name: 'TasksImportant',
-                    component: () => import('@/views/tasks/list.vue')
-                },
-                {
-                    path: 'closing-date',
-                    name: 'TasksClosingDate',
-                    component: () => import('@/views/tasks/list.vue')
-                },
-                {
-                    path: 'inbox',
-                    name: 'TasksInbox',
-                    component: () => import('@/views/tasks/list.vue')
-                },
-                {
                     path: ':id',
                     name: 'TasksDynamicId',
                     component: () => import('@/views/tasks/list.vue')

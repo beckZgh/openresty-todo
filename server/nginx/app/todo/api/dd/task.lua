@@ -3,7 +3,7 @@ local dd_task    = _load "$dd_task"
 local utils      = _load "%utils"
 local hashid     = _load "#hashid"
 
-local __ = { ver = "v22.12.07" }
+local __ = { ver = "v22.12.08" }
 
 __.get__ = {
     "获取待办任务",
@@ -34,7 +34,7 @@ __.list = function(t)
 
     local wh = {
         user_id      = t.user_id,
-        task_cate_id = t.task_cate_id or ""
+        task_cate_id = t.task_cate_id or nil
     }
 
     local res = dd_task.list(wh)
@@ -83,7 +83,7 @@ __.set__ = {
         { "task_desc?"    , "任务描述"            },
         { "is_finished?"  , "是否完成", "number"  },
         { "is_important?" , "是否重要", "number"  },
-        { "is_today?"     , "我的一天", "number"  },
+        { "myday?"        , "我的一天"            },
         { "closing_date?" , "截止日期"            },
         { "list_index?"   , "任务排序", "number"  },
     },
@@ -170,29 +170,14 @@ __.set_closing_date__ = {
     "设置截止日期",
     log = true,
     req = {
-        { "user_id"      , "用户编码" },
-        { "task_id"      , "任务编码" },
-        { "closing_date" , "截止日期" },
+        { "user_id"     , "用户编码" },
+        { "task_id"     , "任务编码" },
+        { "closing_date", "截止日期" },
     },
     res = "$dd_task"
 }
 __.set_closing_date = function(t)
-
-    local  tOld, err = __.get(t)
-    if not tOld then return nil, err end
-
-    -- 生成待更新的数据
-    -- @d : $dd_task
-    local  d, wh = utils.gen_update(t, tOld, "user_id", "task_id" )
-    if not d then return tOld end
-
-    t.update_time = ngx.localtime()
-
-    local  ok, err = dd_task.set(wh)
-    if not ok then return nil, err end
-
-    return __.get(t)
-
+    return __.set(t)
 end
 
 __.del__ = {

@@ -1,78 +1,71 @@
 
-import { defineStore                } from 'pinia'
-import { reactive, toRefs, computed } from 'vue'
-import { useAppStore                } from './app'
-import { router                     } from '@/router'
+import { defineStore      } from 'pinia'
+import { useAppStore      } from './app'
+import { useTaskCateStore } from './task-cate'
+import { router           } from '@/router'
+import { reactive, toRefs, computed, markRaw } from 'vue'
 
+const DEFAULT_DATE = '1900-01-01'
 export const useTaskStore = defineStore('task', () => {
     const G        = window.G || {}
     const appStore = useAppStore()
 
     // 数据
-    const state = reactive({
-        serach_focus: false,                            // 搜索框获得焦点
-        search_val  : '',                               // 搜索值
-        tasks       : G.tasks || [] as $api.$dd_task[], // 待办任务列表
+    const m = reactive({
+        serach_focus    : false                           , // 搜索框获得焦点
+        search_val      : ''                              , // 搜索值
+        tasks           : G.tasks || [] as $api.$dd_task[], // 待办任务列表
+        curr_edit_item  : null as null | $api.$dd_task    , // 当前编辑项
+        contextmenu_ref : null as any                     , // 右键菜单引用
     })
 
-    // 我的一天
-    const myday_list$ = computed(() => state.tasks.filter(item => item.myday === appStore.today$))
+    // 任务分类
+    const task$ = computed((): Record<string, $api.$dd_task[]> => {
+        const myday_list        = [] as $api.$dd_task[] // 我的一天
+        const important_list    = [] as $api.$dd_task[] // 重要
+        const closing_date_list = [] as $api.$dd_task[] // 计划内
+        const inbox_list        = [] as $api.$dd_task[] // 任务
+        const custom_cate_list  = {} as Record<string,  $api.$dd_task[]>
 
-    // 重要
-    const important_list$ = computed(() => state.tasks.filter(item => item.is_important === 1))
+        m.tasks.forEach(item => {
+            // 我的一天
+            if (item.myday === appStore.today$) myday_list.push(item)
 
-    // 计划内
-    const closing_date_list$ = computed(() => state.tasks.filter(item => item.closing_date > '1900-01-01' ))
+            // 重要
+            if (item.is_important === 1) important_list.push(item)
 
-    // 任务
-    const inbox_list$ = computed(() => state.tasks.filter(item => !item.todo_cate_id))
+            // 计划内
+            if (item.closing_date > DEFAULT_DATE) closing_date_list.push(item)
 
-    // 列表
-    const cate_list$ = computed(() => {
-        const map: Record<string, $api.$dd_task[]> = {}
-        state.tasks.forEach(item => {
-            map[item.todo_cate_id] = map[item.todo_cate_id] || []
-            map[item.todo_cate_id].push(item)
-        })
-        return map
-    })
-
-    // 统计未完成的数量
-    const len$ = computed(() => {
-        const map: Record<string, number> = {
-            myday       : myday_list$.value.filter(item => item.is_finished === 0).length,
-            important   : important_list$.value.filter(item => item.is_finished === 0).length,
-            closing_date: closing_date_list$.value.filter(item => item.is_finished === 0).length,
-            inbox       : inbox_list$.value.filter(item => item.is_finished === 0).length,
-        }
-
-        const cate_list = cate_list$.value
-        Object.keys(cate_list).forEach(key => {
-            map[key] = cate_list[key].filter(item => item.is_finished === 0).length
-        })
-        return map
-    })
-
-    // 设置搜索是否获得焦点
-    function setSearchFocus(focus: boolean) {
-        state.serach_focus = focus
-    }
-
-    // 添加任务
-    async function addTask() {
-        const input_value = await $utils.showPrompt('请输入任务名称', '新建任务', {
-            inputValidator(value) { // value 默认为 null
-                return (value && value.trim()) ? true : '任务名称不能为空'
+            // 自定义列表
+            if (item.task_cate_id) {
+                custom_cate_list[item.task_cate_id] = custom_cate_list[item.task_cate_id] || []
+                custom_cate_list[item.task_cate_id].push(item)
+            } else {
+                inbox_list.push(item)
             }
         })
-        if ( !input_value ) return
 
+        return {
+            myday       : myday_list,
+            important   : important_list,
+            closing_date: closing_date_list,
+            inbox       : inbox_list,
+            ...custom_cate_list
+        }
+    })
+
+    // ---------------------------------------------------------------------------
+
+    // 添加任务
+    async function addTask(task_name: string) {
         const id      = (router.currentRoute.value.params.id || '') as string
-        const cate_id = ['myday', 'important', 'closing_date', 'inbox'].includes(id) ? '' : id
-        const res = await $api.dd.task.add({ task_name: input_value as string, task_cate_id: cate_id }, { showLoading: true })
-        if ( !res.ok ) return
-
-        state.tasks.push(res.data)
+        const cate_id = appStore.nav_ids.includes(id) ? '' : id
+        const res = await $api.dd.task.add({ task_name: task_name, task_cate_id: cate_id }, { showLoading: true })
+        if (res.ok) {
+            m.tasks.push(res.data)
+        }
+        return res
     }
 
     // 修改任务名称
@@ -88,44 +81,54 @@ export const useTaskStore = defineStore('task', () => {
         const res = await $api.dd.task.set_name({ task_id: item.task_id, task_name: input_value as string }, { showLoading: true })
         if ( !res.ok ) return
 
-        const idx = state.tasks.findIndex(_ => _.task_id === item.task_id)
-        if (idx !== -1) state.tasks.splice(idx, 1, res.data)
+        const idx = m.tasks.findIndex(_ => _.task_id === item.task_id)
+        if (idx !== -1) m.tasks.splice(idx, 1, res.data)
     }
 
     // 设置任务是否已完成标识
-    async function setTaskIsFinished(id: string, is_finished: number) {
-        const res = await $api.dd.task.set_is_finished({ task_id: id, is_finished }, { showLoading: true })
-        if ( !res.ok ) return
-
-        const idx = state.tasks.findIndex(_ => _.task_id === id)
-        if (idx !== -1) state.tasks.splice(idx, 1, res.data)
+    async function setTaskIsFinished(item: $api.$dd_task) {
+        const task_id     = item.task_id
+        const is_finished = item.is_finished === 1 ? 0 : 1
+        const res = await $api.dd.task.set_is_finished({ task_id, is_finished }, { showLoading: true })
+        if (res.ok) {
+            $utils.arr.replace(m.tasks, res.data, 'task_id')
+        }
+        return res
     }
 
     // 设置任务是否重要标识
-    async function setTaskImportant(id: string, is_important: number) {
-        const res = await $api.dd.task.set_is_important({ task_id: id, is_important })
-        if ( !res.ok ) return
-
-        const idx = state.tasks.findIndex(_ => _.task_id === id)
-        if (idx !== -1) state.tasks.splice(idx, 1, res.data)
+    async function setTaskImportant(item: $api.$dd_task) {
+        const task_id      = item.task_id
+        const is_important = item.is_important === 1 ? 0 : 1
+        const res = await $api.dd.task.set_is_important({ task_id, is_important })
+        if (res.ok) {
+            $utils.arr.replace(m.tasks, res.data, 'task_id')
+        }
+        return res
     }
 
     // 设置任务我的一天标识
-    async function setTaskMyday(id: string, myday: string) {
-        const res = await $api.dd.task.set_myday({ task_id: id, myday })
-        if ( !res.ok ) return
-
-        const idx = state.tasks.findIndex(_ => _.task_id === id)
-        if (idx !== -1) state.tasks.splice(idx, 1, res.data)
+    async function setTaskMyday(item: $api.$dd_task) {
+        const task_id = item.task_id
+        const myday   = item.myday !== DEFAULT_DATE ? DEFAULT_DATE : appStore.server_date
+        const res = await $api.dd.task.set_myday({ task_id, myday })
+        if (res.ok) {
+            $utils.arr.replace(m.tasks, res.data, 'task_id')
+        }
+        return res
     }
 
     // 设置任务截止日期
-    async function setTaskClosingDate(id: string, closing_date: string) {
-        const res = await $api.dd.task.set_closing_date({ task_id: id, closing_date })
-        if ( !res.ok ) return
+    async function setTaskClosingDate(item: $api.$dd_task, closing_date: string = '') {
+        if (closing_date === 'today'   ) closing_date = appStore.server_date
+        if (closing_date === 'tomorrow') closing_date = $utils.dt.nextDate(appStore.server_time)
+        if (closing_date === 'delete'  ) closing_date = DEFAULT_DATE
 
-        const idx = state.tasks.findIndex(_ => _.task_id === id)
-        if (idx !== -1) state.tasks.splice(idx, 1, res.data)
+        const res = await $api.dd.task.set_closing_date({ task_id: item.task_id, closing_date })
+        if (res.ok) {
+            $utils.arr.replace(m.tasks, res.data, 'task_id')
+        }
+        return res
     }
 
     // 删除任务
@@ -136,31 +139,50 @@ export const useTaskStore = defineStore('task', () => {
         const res = await $api.dd.task.del({ task_id: item.task_id })
         if ( !res.ok ) return
 
-        const idx = state.tasks.findIndex(_ => _.task_id === item.task_id)
-        if (idx !== -1) state.tasks.splice(idx, 1)
-
-        $utils.successMsg('删除成功')
+        const idx = m.tasks.findIndex(_ => _.task_id === item.task_id)
+        if (idx !== -1) m.tasks.splice(idx, 1)
     }
 
-    // 退出清空数据
-    function clear() {
-        state.serach_focus = false
-        state.search_val   = ''
-        state.tasks        = []
+    // ---------------------------------------------------------------------------
+
+    // 设置搜索是否获得焦点
+    function setSearchFocus(focus: boolean) {
+        m.serach_focus = focus
     }
+
+     // 退出清空数据
+     function clear() {
+        m.serach_focus = false
+        m.search_val   = ''
+        m.tasks        = []
+    }
+
+    // 设置当前右键编辑项
+    function setCurrEditItem(item: $api.$dd_task | null) {
+        useTaskCateStore().hideContextmenu()
+        m.curr_edit_item = item
+    }
+
+    // 设置右键菜单引用
+    function setContextmenuRef(ref: any) {
+        m.contextmenu_ref = markRaw(ref) // 标记不进行 proxy 代理
+    }
+
+    // 隐藏右键菜单
+    function hideContextmenu() {
+        m.contextmenu_ref && m.contextmenu_ref.hide()
+    }
+
 
     return {
-        ...toRefs(state),
-        myday_list$,
-        important_list$,
-        closing_date_list$,
-        inbox_list$,
-        cate_list$,
-        len$,
-
+        ...toRefs(m),
+        task$,
         clear,
         setSearchFocus,
-
+        setCurrEditItem,
+        setContextmenuRef,
+        hideContextmenu,
+        // ----------------------
         addTask,
         delTask,
         setTaskName,

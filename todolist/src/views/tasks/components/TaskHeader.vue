@@ -1,5 +1,8 @@
 <script lang="ts">
+import type { PropType } from 'vue'
+
 import { defineComponent, computed, ref } from 'vue'
+import { useRouter   } from 'vue-router'
 import { useAppStore } from '@/store'
 
 import Img1 from '@/assets/theme-bg/img1.jpg'
@@ -13,13 +16,19 @@ import Img8 from '@/assets/theme-bg/img8.jpg'
 
 export default defineComponent({
     name: 'TaskHeader',
-    setup() {
+    props: {
+        cates: { type: Array as PropType<$api.$dd_task_cate[]>, default: () => [] }
+    },
+    setup(props) {
+        const $router   = useRouter()
         const appStore  = useAppStore()
-        const curr_nav$ = computed(() => {
-            const nav = appStore.curr_nav
-            return {
-                icon : 'icon'  in nav ? nav.icon  : '',
-                title: 'title' in nav ? nav.title : nav.task_cate_name,
+
+        const curr_nav$ = computed((): IntelligenceNavItem | $api.$dd_task_cate => {
+            const cate_id = $router.currentRoute.value.params.id as string
+            if (appStore.nav_ids.includes(cate_id)) {
+                return appStore.navs.find(item => item.id === cate_id)!
+            } else {
+                return props.cates.find(item => item.task_cate_id === cate_id)!
             }
         })
 
@@ -42,12 +51,19 @@ export default defineComponent({
 <template>
     <div class="task-header">
         <div class="task-header-left">
-            <ElIcon v-if="curr_nav$.icon" :size="20">
-                <component :is="curr_nav$.icon" />
-            </ElIcon>
-            <span class="task-header-left__title">
-                {{ curr_nav$.title }}
-            </span>
+           <template v-if="'task_cate_id' in curr_nav$">
+                <span class="task-header-left__title">
+                    {{ curr_nav$.task_cate_name }}
+                </span>
+            </template>
+            <template v-else>
+                <ElIcon v-if="curr_nav$.icon" :size="20">
+                    <component :is="curr_nav$.icon" />
+                </ElIcon>
+                <span class="task-header-left__title">
+                    {{ curr_nav$.title }}
+                </span>
+            </template>
         </div>
         <slot name="extra" />
         <ElButton text>

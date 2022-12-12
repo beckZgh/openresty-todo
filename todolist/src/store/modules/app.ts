@@ -36,7 +36,7 @@ export const useAppStore = defineStore('app', () => {
         server_date: G.server_date ?? '',
         user       : G.user ?? null as $api.$pv_user | null,
         navs       ,
-        curr_nav   : navs[0] as IntelligenceNavItem | $api.$dd_task_cate,
+        nav_ids    : navs.map(item => item.id),
         setting    : {
             theme: 'light' as 'dark' | 'light',
             enable_important    : true ,

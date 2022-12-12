@@ -8,20 +8,15 @@ import {
 } from '@/store'
 
 import AppLogo               from '@/components/AppLogo.vue'
-import LayoutCustomTaskCates from './components/LayoutCustomTaskCates.vue'
+import LayoutCustomTaskCates from './LayoutCustomTaskCates.vue'
 
 export default defineComponent({
     components: { AppLogo, LayoutCustomTaskCates },
     setup() {
         const appStore      = useAppStore()      // 应用数据
         const taskCateStore = useTaskCateStore() // 任务列表/分组数据
-        const todoStore     = useTaskStore()     // 任务数据
+        const taskStore     = useTaskStore()     // 任务数据
         const $router       = useRouter()        // 路由实例
-
-        // 当前导航编码
-        const curr_nav_id$ = computed(() => {
-            return ($router.currentRoute.value.params.id || '') as string
-        })
 
         // 处理用户指令
         function handleCommand(command: string) {
@@ -33,17 +28,29 @@ export default defineComponent({
 
         // 切换导航
         function handleSwitchNav(item: IntelligenceNavItem | $api.$dd_task_cate) {
-            appStore.curr_nav = item
             $router.push(`/tasks/${ 'task_cate_id' in item ? item.task_cate_id : item.id }`)
         }
 
+        // 添加列表
+        function onAddTaskCate() {
+            taskCateStore.setCurrEditItem(null)
+            taskCateStore.addTaskCate()
+        }
+
+        // 添加列表分组
+        function onAddTaskCateGroup() {
+            taskCateStore.setCurrEditItem(null)
+            taskCateStore.addTaskCateGroup()
+        }
+
         return {
-            curr_nav_id$,
             appStore,
             taskCateStore,
-            todoStore,
+            taskStore,
             handleCommand,
             handleSwitchNav,
+            onAddTaskCate,
+            onAddTaskCateGroup
         }
     }
 })
@@ -83,12 +90,12 @@ export default defineComponent({
                 </div>
 
                 <ElInput
-                    v-model="todoStore.search_val"
-                    prefix-icon="Search"
-                    placeholder="快速搜索..."
+                    v-model="taskStore.search_val"
+                    suffix-icon="Search"
+                    placeholder="快速查找..."
                     style="margin-bottom: 15px;"
-                    @focus="todoStore.setSearchFocus(true)"
-                    @blur="todoStore.setSearchFocus(false)"
+                    @focus="taskStore.setSearchFocus(true)"
+                    @blur="taskStore.setSearchFocus(false)"
                 />
 
                 <template v-for="item in appStore.navs$" :key="item.path" >
@@ -104,8 +111,8 @@ export default defineComponent({
                         <div class="nav-item__title">
                             {{ item.title }}
                         </div>
-                        <div v-if="todoStore.len$[item.id]" class="nav-item__qty">
-                            {{ todoStore.len$[item.id] }}
+                        <div v-if="(taskStore.task$[item.id] || []).length" class="nav-item__qty">
+                            {{ taskStore.task$[item.id].length }}
                         </div>
                     </div>
                 </template>
@@ -121,12 +128,12 @@ export default defineComponent({
             <!-- 新建列表、目录 -->
             <div class="layout-aside-footer">
                 <div class="layout-aside-footer-left">
-                    <ElButton text @click="taskCateStore.addTaskCate">
+                    <ElButton text @click="onAddTaskCate">
                         <ElIcon><Plus /></ElIcon>
                         <span style="position: relative; top: 2px;">新建列表</span>
                     </ElButton>
                 </div>
-                <ElButton text @click="taskCateStore.addTaskCateGroup">
+                <ElButton text @click="onAddTaskCateGroup">
                     <ElIcon :size="18"><FolderAdd /></ElIcon>
                 </ElButton>
             </div>

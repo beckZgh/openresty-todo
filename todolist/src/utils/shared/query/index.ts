@@ -26,3 +26,15 @@ export const queryToObj = function (query: string) {
 
     return obj
 }
+
+
+
+const o = { a: 1, b: 2 }
+
+type O = keyof typeof o
+
+const O1: Record<O, any> = {}
+
+Object.keys(o).forEach(k => {
+    O1[k] = o[k]
+})
