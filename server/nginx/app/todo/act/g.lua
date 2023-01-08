@@ -16,7 +16,7 @@ __.actx = function()
 
     -- 取得基础数据
     local dd
-    if user.user_id then
+    if user and user.user_id then
        dd = api.dd.load(user)
     end
 
