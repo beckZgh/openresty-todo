@@ -20,14 +20,14 @@ end
 -- 保留原有的 package.path
 local package_path = rawget(_G, "package_path")
 if not package_path then
-    package_path = package.path
+    package_path = gsub(package.path, "\\", "/")
     rawset(_G, "package_path", package_path)
 end
 
 -- 保留原有的 package.cpath
 local package_cpath = rawget(_G, "package_cpath")
 if not package_cpath then
-    package_cpath = package.cpath
+    package_cpath = gsub(package.cpath, "\\", "/")
     rawset(_G, "package_cpath", package_cpath)
 end
 
@@ -95,9 +95,6 @@ if not pok then
 end
 
 rawset(_G, "_app_main"      , app.main)
-rawset(_G, "_app_auth"      , app.auth)
 rawset(_G, "_app_help"      , app.help)
-rawset(_G, "_app_monitor"   , app.monitor)
-rawset(_G, "_app_info"      , app.info)
 rawset(_G, "_app_debug"     , app.debug)
 rawset(_G, "_app_waf"       , app.waf)

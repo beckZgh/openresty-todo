@@ -1,7 +1,7 @@
 
 local _sub      = string.sub
 local _random   = require "resty.random".number
-local waf_limit = ngx.shared.app_waf_limit
+local my_index  = ngx.shared.my_index
 
 local hashids   = require "resty.hashids"
 local hash      = hashids.new("4006868339@weimember.cn", 18)
@@ -19,11 +19,11 @@ local LAST_TIME = 0
 -- 10位时间戳 + 4位流水号 + 4位随机码
 local function get_index()
 
-    local index, err = waf_limit:incr(KEY, 1, 0) -- 流水号加一
+    local index, err = my_index:incr(KEY, 1, 0) -- 流水号加一
     if not index then return nil, err end
 
     if index == MAX then
-        waf_limit:incr(KEY, -MAX)
+        my_index:incr(KEY, -MAX)
     elseif index > MAX then
         index = index % MAX -- 取余
     end
